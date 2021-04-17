@@ -39,7 +39,7 @@ class game_class:
         print(f"Sim {simulation_id} creating game")
         self.lifetime = 1
         self.CKC_number = 6
-        self.strategy_number = 9
+        self.strategy_number = 9    # 8 means the ninth strategy disabled, 9 means all strategie used.
         self.DD_using = DD_using
         self.decision_scheme = decision_scheme
         self.scheme_name = scheme_name

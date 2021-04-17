@@ -1007,7 +1007,7 @@ class attacker_class:
             print("create attacker")
         self.attacker_ID = attacker_ID
         self.network = copy.deepcopy(game.graph.network)  # attacker's view
-        self.strategy_number = 9
+        self.strategy_number = game.strategy_number
         self.collection_list = []
         self.location = None
         self.impact_record = np.ones(

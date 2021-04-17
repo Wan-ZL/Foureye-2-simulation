@@ -33,7 +33,7 @@ def def_strategy_cost(strategy_number):
     defend_cost[5] = 1
     defend_cost[6] = 2
     defend_cost[7] = 2
-    defend_cost[8] = 0
+    if strategy_number-1 == 8: defend_cost[8] = 0
 
     return defend_cost
 
@@ -382,7 +382,7 @@ def defender_class_create_bundle(self, DD_using):
                 # R
                 strategy_option[0] = 1
                 strategy_option[7] = 1
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 1:
                 # D
                 strategy_option[0] = 1
@@ -683,7 +683,7 @@ class defender_class:
         if display: print("create defender")
         print('The scikit-learn version is {}.'.format(sklearn.__version__))
         self.network = copy.deepcopy(game.graph.network)  # defender's view
-        self.strategy_number = 9  # strategy size
+        self.strategy_number = game.strategy_number  # strategy size
         self.key_time = 1
         self.monit_time = 1
         self.dec = 0
