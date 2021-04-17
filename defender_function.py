@@ -53,71 +53,6 @@ def defender_uncertainty_update(att_detect, def_monit_time, def_strategy_number,
         return 0
 
 
-# In[ ]:
-
-
-# In[32]:
-
-
-# def def_strategy_option_matrix(CKC_number, strategy_number, DD_using):
-#     strat_option = np.zeros(
-#         (CKC_number + 1, strategy_number))  # last one is full game
-
-#     if DD_using:
-#         # For Scheme 1 3 (with DD) 1 3, use below
-#         # R
-#         strat_option[0, 0] = 1
-#         strat_option[0, 7] = 1
-#         # D
-#         strat_option[1, 0] = 1
-#         strat_option[1, 1] = 1
-#         # E
-#         strat_option[2, 2] = 1
-#         strat_option[2, 3] = 1
-#         strat_option[2, 4] = 1
-#         strat_option[2, 6] = 1
-#         # C2
-#         for i in range(2, strategy_number):
-#             strat_option[3, i] = 1
-#         # M
-#         for i in range(2, strategy_number):
-#             strat_option[4, i] = 1
-#         # DE
-#         for i in range(2, strategy_number):
-#             strat_option[5, i] = 1
-#         # Full Game
-#         for i in range(strategy_number):
-#             strat_option[6, i] = 1
-#     else:
-#         # For Scheme 2 4 (no DD), use below
-#         # R
-#         strat_option[0, 0] = 1
-#         # D
-#         strat_option[1, 0] = 1
-#         strat_option[1, 1] = 1
-#         # E
-#         strat_option[2, 2] = 1
-#         strat_option[2, 3] = 1
-#         # C2
-#         strat_option[3, 2] = 1
-#         strat_option[3, 3] = 1
-#         # M
-#         strat_option[4, 2] = 1
-#         strat_option[4, 3] = 1
-#         # DE
-#         strat_option[5, 2] = 1
-#         strat_option[5, 3] = 1
-#         # Full Game
-#         strat_option[6, 0] = 1
-#         strat_option[6, 1] = 1
-#         strat_option[6, 2] = 1
-#         strat_option[6, 3] = 1
-
-#     return strat_option
-
-
-# In[33]:
-
 
 # DS1 – Firewalls
 def defense_DS_1(G_real, G_att, G_def):
@@ -388,7 +323,7 @@ def defender_class_create_bundle(self, DD_using):
                 strategy_option[0] = 1
                 strategy_option[1] = 1
                 strategy_option[7] = 1
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 2:
                 # E
                 strategy_option[1] = 1
@@ -397,7 +332,7 @@ def defender_class_create_bundle(self, DD_using):
                 strategy_option[4] = 1
                 strategy_option[6] = 1
                 strategy_option[7] = 1
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 3:
                 # C2
                 for i in range(1, self.strategy_number):
@@ -426,36 +361,36 @@ def defender_class_create_bundle(self, DD_using):
             if def_CKC == 0:
                 # R
                 strategy_option[0] = 1
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 1:
                 # D
                 strategy_option[0] = 1
                 strategy_option[1] = 1
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 2:
                 # E
                 strategy_option[1] = 1
                 strategy_option[2] = 1
                 strategy_option[3] = 1    # test feature: orginin: remove comment
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 3:
                 # C2
                 strategy_option[1] = 1
                 strategy_option[2] = 1
                 strategy_option[3] = 1    # test feature: orginin: remove comment
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 4:
                 # M
                 strategy_option[1] = 1
                 strategy_option[2] = 1
                 strategy_option[3] = 1    # test feature: orginin: remove comment
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 5:
                 # DE
                 strategy_option[1] = 1
                 strategy_option[2] = 1
                 strategy_option[3] = 1
-                strategy_option[8] = 1
+                if len(strategy_option)-1 == 8: strategy_option[8] = 1
             else:
                 # Full GAME
                 print(f"def_CKC {def_CKC}")
@@ -467,30 +402,34 @@ def defender_class_create_bundle(self, DD_using):
             strategy_option[1] = 1
             strategy_option[2] = 1
             strategy_option[3] = 1
-            strategy_option[8] = 1
+            if len(strategy_option)-1 == 8: strategy_option[8] = 1
 
-    # strategy option to ID list
-    strategy_avaliable_ID_list = [
-        i for i, x in enumerate(strategy_option) if x == 1]
+    if self.use_bundle:
+        # strategy option to ID list
+        strategy_avaliable_ID_list = [
+            i for i, x in enumerate(strategy_option) if x == 1]
 
-    # create all possible bundle
-    all_strategy_bundle = []
-    for length in range(1, len(strategy_avaliable_ID_list)):
-        all_strategy_bundle.extend(
-            list(itertools.combinations(strategy_avaliable_ID_list, length)))
-    # tuple to list
-    all_strategy_bundle = [list(bundle) for bundle in all_strategy_bundle]
+        # create all possible bundle
+        all_strategy_bundle = []
+        for length in range(1, len(strategy_avaliable_ID_list)):
+            all_strategy_bundle.extend(
+                list(itertools.combinations(strategy_avaliable_ID_list, length)))
+        # tuple to list
+        all_strategy_bundle = [list(bundle) for bundle in all_strategy_bundle]
 
-    # get bundle that is not out of budget
-    optional_strategy_bundle_list = []
-    for bundle in all_strategy_bundle:
-        bundle_cost = 0
-        for strategy_id in bundle:
-            bundle_cost += self.strat_cost[strategy_id]
-        if bundle_cost <= self.cost_limit:
-            optional_strategy_bundle_list.append(bundle)
 
-    self.optional_bundle_list = optional_strategy_bundle_list
+        # get bundle that is not out of budget
+        optional_strategy_bundle_list = []
+        for bundle in all_strategy_bundle:
+            bundle_cost = 0
+            for strategy_id in bundle:
+                bundle_cost += self.strat_cost[strategy_id]
+            if bundle_cost <= self.cost_limit:
+                optional_strategy_bundle_list.append(bundle)
+
+        self.optional_bundle_list = optional_strategy_bundle_list
+    else:
+        self.optional_bundle_list = [[i] for i, x in enumerate(strategy_option) if x == 1]
 
 
 # In[42]:
@@ -532,7 +471,7 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
             the_file = open("data/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
         knn_model_list = pickle.load(the_file)
         the_file.close()
-        y_pred = np.zeros(9)
+        y_pred = np.zeros(self.strategy_number)
         obser_stra_count_list_normalized = _2darray_normalization(self.observed_strategy_count_list)
         for index in range(len(knn_model_list)):
             # found bug here
@@ -600,6 +539,7 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
 
     bundle_HEU = []
     bundle_lambda = 2
+
     for bundle in self.optional_bundle_list:
         C_DHEU_value = 0
         for strategy_id in bundle:
@@ -719,6 +659,7 @@ class defender_class:
         self.ML_window_size = 5
         self.observed_strategy_count_list = np.zeros((self.ML_window_size, self.strategy_number))
         self.S_j = np.ones(self.strategy_number)/self.strategy_number
+        self.use_bundle = game.use_bundle
 
 
 

@@ -1,4 +1,3 @@
 import numpy as np
 
-a = np.ones(8)
-if len(a)-1 == 8: print("here")
+print([1 / (6 + 1)] * (6 + 1))

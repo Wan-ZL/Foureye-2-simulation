@@ -39,7 +39,8 @@ class game_class:
         print(f"Sim {simulation_id} creating game")
         self.lifetime = 1
         self.CKC_number = 6
-        self.strategy_number = 9    # 8 means the ninth strategy disabled, 9 means all strategie used.
+        self.strategy_number =8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
+        self.use_bundle = False      # Note: False means defender only use one strategy each game
         self.DD_using = DD_using
         self.decision_scheme = decision_scheme
         self.scheme_name = scheme_name
@@ -52,7 +53,7 @@ class game_class:
         self.attacker_template = attacker_class(self, self.uncertain_scheme, self.attacker_ID)
         self.attacker_list.append(
             attacker_class(self, self.uncertain_scheme, self.attacker_ID))  # for avoid index out of range eror.
-        self.new_attacker_probability = 1  # 0.1
+        self.new_attacker_probability = 0  # 1  # 0 means only one attacker in game.
         self.collusion_attack_probability = 1
         self.attacker_number = 1
         self.defender = defender_class(self, self.uncertain_scheme)
@@ -373,8 +374,9 @@ class game_class:
                 if not self.graph.network.has_node(index):
                     attacker.collection_list.remove(index)
 
+    # Add attacker with probability. If no attacker in list, add one.
     def new_attacker(self, simulation_id):
-        if random.random() < self.new_attacker_probability:
+        if random.random() < self.new_attacker_probability or len(self.attacker_list)==0:
             self.attacker_number += 1
             print(
                 f"\033[93m Sim {simulation_id} Creating attacker #{self.attacker_number} \033[0m"

@@ -30,7 +30,6 @@ def game_start(simulation_id=1,
     # return
     while (not game.game_over):
         print(game.lifetime)
-
         game.defender_round()
         game.evict_reason_history[1] += game.count_number_of_evicted_attacker()
         game.attacker_round(simulation_id)
@@ -379,6 +378,6 @@ if __name__ == '__main__':
     # run_sumulation_group_1("DD-IPI", True, True, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-IPI", True, True, 2, simulation_time)
     # run_sumulation_group_1("DD-Random-PI", True, False, 0, simulation_time)
-    # run_sumulation_group_1("DD-PI", True, False, 1, simulation_time)
+    run_sumulation_group_1("DD-PI", True, False, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-PI", True, False, 2, simulation_time)
     print("Project tooks", time.time() - start, "seconds.")

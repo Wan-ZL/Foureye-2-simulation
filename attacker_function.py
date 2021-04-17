@@ -28,11 +28,11 @@ def att_strategy_option_matrix(CKC_number, strategy_number):
     strat_option = np.zeros((CKC_number, strategy_number))
     # R
     strat_option[0, 0] = 1
-    strat_option[0, 8] = 1
+    if strategy_number-1==8: strat_option[0, 8] = 1
     # D
     strat_option[1, 0] = 1
     strat_option[1, 1] = 1
-    strat_option[1, 8] = 1
+    if strategy_number-1==8: strat_option[1, 8] = 1
     # E
     strat_option[2, 0] = 1
     strat_option[2, 1] = 1
@@ -40,7 +40,7 @@ def att_strategy_option_matrix(CKC_number, strategy_number):
     strat_option[2, 3] = 1
     strat_option[2, 4] = 1
     strat_option[2, 6] = 1
-    strat_option[2, 8] = 1
+    if strategy_number-1==8: strat_option[2, 8] = 1
     # C2
     for i in range(strategy_number):
         strat_option[3, i] = 1
@@ -70,7 +70,7 @@ def att_strategy_cost(strategy_number):
     attack_cost[5] = 3
     attack_cost[6] = 2
     attack_cost[7] = 3
-    attack_cost[8] = 0
+    if strategy_number-1==8: attack_cost[8] = 0
 
     return attack_cost
 
@@ -1010,19 +1010,13 @@ class attacker_class:
         self.strategy_number = game.strategy_number
         self.collection_list = []
         self.location = None
-        self.impact_record = np.ones(
-            self.strategy_number
-        )  # attacker believe all strategy have full impact initially
+        self.impact_record = np.ones(self.strategy_number)  # attacker believe all strategy have full impact initially
         self.strat_cost = att_strategy_cost(self.strategy_number)
-        self.strat_option = att_strategy_option_matrix(
-            game.CKC_number, self.strategy_number)  # Table 4
-        self.belief_context = [1 /
-                               (game.CKC_number + 1)] * (game.CKC_number + 1)
+        self.strat_option = att_strategy_option_matrix(game.CKC_number, self.strategy_number)  # Table 4
+        self.belief_context = [1 / (game.CKC_number + 1)] * (game.CKC_number + 1)
         self.CKC_position = 0
         self.CKC_number = game.CKC_number
-        self.prob_believe_opponent = np.zeros(
-            (game.CKC_number + 1,
-             self.strategy_number))
+        self.prob_believe_opponent = np.zeros((game.CKC_number + 1,self.strategy_number))
         self.in_system_time = 1
         self.P_fake = [0]  # (Make variable mutable) fake key condition controlled by DS7
         self.monit_time = 1
@@ -1053,6 +1047,7 @@ class attacker_class:
     def next_stage(self):
         if self.CKC_position != 5:
             self.CKC_position += 1
+
 
     def reset_attribute(self):
         pass
