@@ -63,13 +63,13 @@ def att_strategy_cost(strategy_number):
     #      preset cost
     attack_cost = np.zeros(strategy_number)
     attack_cost[0] = 1
-    attack_cost[1] = 3
-    attack_cost[2] = 3
-    attack_cost[3] = 3
+    attack_cost[1] = 3  # test: orignial 3
+    attack_cost[2] = 3  # test: orignial 3
+    attack_cost[3] = 3  # test: orignial 3
     attack_cost[4] = 1
     attack_cost[5] = 3
     attack_cost[6] = 2
-    attack_cost[7] = 3
+    attack_cost[7] = 3  # test: orignial 3
     if strategy_number-1==8: attack_cost[8] = 0
 
     return attack_cost
@@ -102,7 +102,7 @@ def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_s
 
     # (scheme change here!)
     if uncertain_scheme:
-        return 0 # for test. orignial: uncertainty
+        return uncertainty # for test. orignial: uncertainty
     else:
         return 0
 
@@ -787,13 +787,21 @@ def get_overall_attacker_impact_per_game(attacker_list, attacker_template):
     return overall_ai
 
 
-# In[ ]:
 
+def _2darray_normalization(_2d_array):
+    sum_array = np.ones(_2d_array.shape)/_2d_array.shape[1]
+    for index in range(_2d_array.shape[0]):
+        if np.sum(_2d_array[index]) == 0:
+            continue
+        else:
+            sum_array[index] = _2d_array[index]/np.sum(_2d_array[index])
+    return sum_array
 
-# below is for class
-
-
-# In[ ]:
+def array_normalization(array):
+    if np.sum(array) == 0:
+        return np.ones(array.shape)/len(array)
+    else:
+        return array/np.sum(array)
 
 
 def attacker_class_choose_strategy(self, def_strategy_number,
@@ -803,13 +811,23 @@ def attacker_class_choose_strategy(self, def_strategy_number,
     P_subgame[self.CKC_position] = 1
 
     # since defender(column player) doesn't have CKC stage, so S_j = c_j
-    # S_j = np.zeros(self.strategy_number)
 
-    if sum(self.observed_strategy_count) != 0:
-        S_j = self.observed_strategy_count / sum(self.observed_strategy_count)
-    else:
-        S_j = np.ones(self.observed_strategy_count) / len(self.observed_strategy_count)
+    # if sum(self.observed_strategy_count) != 0:  # old
+    #     S_j = self.observed_strategy_count / np.sum(self.observed_strategy_count)
+    # else:
+    #     S_j = np.ones(self.observed_strategy_count) / len(self.observed_strategy_count)
 
+    S_j = np.ones(self.strategy_number) / self.strategy_number
+    c_kj = _2darray_normalization(self.observed_strategy_count)
+    p_k = array_normalization(self.observed_CKC_count)
+    for j in range(len(S_j)):
+        temp_S = 0
+        for k in range(len(p_k)):
+            temp_S += p_k[k] * c_kj[k][j]
+        S_j[j] = temp_S
+
+
+    self.S_j = S_j
 
     # eq. 19 (Uncertainty g)
     g = self.uncertainty
@@ -832,12 +850,7 @@ def attacker_class_choose_strategy(self, def_strategy_number,
     for i in range(self.strategy_number):
         for j in range(def_strategy_number):
             EU_C[i] += S_j[j] * utility[i, j]
-    # Normalization
-    # if (max(EU_C) - min(EU_C)) != 0:
-    #     EU_C = a + (EU_C - min(EU_C)) * (b - a) / (max(EU_C) - min(EU_C))
-    # else:
-    #     EU_C = np.ones(self.strategy_number) * a  # Ensure all value are 'a' if min and max are the same
-    # self.EU_C = EU_C
+
 
     # eq. 9
     EU_CMS = np.zeros(self.strategy_number)
@@ -852,7 +865,7 @@ def attacker_class_choose_strategy(self, def_strategy_number,
     # self.EU_CMS = EU_CMS
 
     # eq. 7
-    HEU = (1 - g) * EU_C + g * EU_CMS # old code
+    # HEU = (1 - g) * EU_C + g * EU_CMS # old code
     if random.random() > g:
         HEU = EU_C
     else:
@@ -1008,6 +1021,7 @@ class attacker_class:
         self.attacker_ID = attacker_ID
         self.network = copy.deepcopy(game.graph.network)  # attacker's view
         self.strategy_number = game.strategy_number
+        self.collusion_attack_probability = game.collusion_attack_probability
         self.collection_list = []
         self.location = None
         self.impact_record = np.ones(self.strategy_number)  # attacker believe all strategy have full impact initially
@@ -1026,7 +1040,7 @@ class attacker_class:
         self.uncertain_scheme = uncertain_scheme
         if self.uncertain_scheme:
             # 1  # 100% uncertainty at beginning  (scheme change here!)
-            self.uncertainty = 0 # test, orignial 1
+            self.uncertainty = 1 # test, orignial 1
         else:
             self.uncertainty = 0
         self.HEU = np.zeros(self.strategy_number)
@@ -1034,7 +1048,10 @@ class attacker_class:
         self.EU_C = None
         self.EU_CMS = None
         self.exfiltrate_data = False
-        self.observed_strategy_count = np.zeros(self.strategy_number)
+        # self.observed_strategy_count = np.zeros(self.strategy_number) # old
+        self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))
+        self.observed_CKC_count = np.zeros(self.CKC_number)
+        self.S_j = np.ones(self.strategy_number) / self.strategy_number
 
     choose_strategy = attacker_class_choose_strategy
 
@@ -1054,6 +1071,24 @@ class attacker_class:
 
     def observe_opponent(self, chosen_strategy_list):
         # observe opponent action in one game
+
+        # observe CKC
+        observed_CKC_id = self.CKC_position
+
+        observed_action_list = []
+        for the_strategy in chosen_strategy_list:
+            if random.random() > self.uncertainty:
+                observed_action_list.append(the_strategy)
+
+        if len(observed_action_list) == 0:
+            observed_action_list.append(random.randrange(0, len(self.observed_strategy_count)))
+
+        for observed_action_id in observed_action_list:
+            self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1
+            self.observed_CKC_count[observed_CKC_id] += 1
+
+    def observe_opponent_old(self, chosen_strategy_list):
+        # observe opponent action in one game
         temp_observed_strategy_list = np.zeros(self.observed_strategy_count.shape)
         for the_strategy in chosen_strategy_list:
             # Observe column player's strategy
@@ -1066,14 +1101,6 @@ class attacker_class:
         # count update
         self.observed_strategy_count = self.observed_strategy_count + temp_observed_strategy_list
 
-
-        # for the_strategy in chosen_strategy_list:
-        #     # Observe column player's strategy
-        #     if random.random() < self.uncertainty:
-        #         self.obs_oppo_strat_history[self.CKC_position,
-        #                                     the_strategy] += 1
-        # self.prob_believe_opponent = update_strategy_probability(
-        #     self.obs_oppo_strat_history)
 
     def update_attribute(self, dec):
         # monitor time

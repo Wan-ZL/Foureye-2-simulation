@@ -508,10 +508,7 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
     for i in range(self.strategy_number):
         for j in range(att_strategy_number):
             EU_C[i] += S_j[j] * utility[i, j]
-    # Normalization
-    # if (max(EU_C) - min(EU_C)) != 0:
-    #     EU_C = a + (EU_C - min(EU_C)) * (b - a) / (max(EU_C) - min(EU_C))
-    # self.EU_C = EU_C
+
 
     # eq. 9
     EU_CMS = np.zeros(self.strategy_number)
@@ -675,21 +672,17 @@ class defender_class:
                 else:
                     # if unsuccessful to observe action, randomly guess one
                     observed_action_id = random.randrange(0,len(self.observed_strategy_count))
-                    # self.observed_strategy_count[random.randrange(0,len(self.observed_strategy_count))] += 1
 
                 # observe CKC
                 if random.random() > self.uncertainty:
                     observed_CKC_id = attacker.CKC_position
-                    # self.observed_CKC_count[attacker.CKC_position] += 1
                 else:
                     # if unsuccessful to observe CKC position, randomly guess one
                     observed_CKC_id = random.randrange(0,len(self.observed_CKC_count))
-                    # self.observed_CKC_count[random.randrange(0,len(self.observed_CKC_count))] += 1
+
                 self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1
                 self.observed_CKC_count[observed_CKC_id] += 1
-        # count update
-        # self.observed_strategy_count_list = np.insert(self.observed_strategy_count_list, self.ML_window_size, self.observed_strategy_count, axis=0)
-        # self.observed_strategy_count_list = np.delete(self.observed_strategy_count_list, 0, axis=0)
+
 
 
     def update_attribute(self, att_detect):

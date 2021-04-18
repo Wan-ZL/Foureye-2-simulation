@@ -41,7 +41,7 @@ class game_class:
         self.CKC_number = 6
         self.strategy_number = 8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
         self.use_bundle = False      # Note: False means defender only use one strategy each game
-        self.enable_IRS_recheck = False     # True means enable IRS rechecking
+        self.enable_IRS_recheck = True     # True means enable IRS rechecking
         self.enable_IRS_recover = False     # True means enable IRS recovery
         self.DD_using = DD_using
         self.decision_scheme = decision_scheme
@@ -50,13 +50,13 @@ class game_class:
         self.graph = graph_class(
             web_data_upper_vul, Iot_upper_vul, self.node_size_multiplier)
         self.uncertain_scheme = uncertain_scheme
+        self.collusion_attack_probability = 1  # TODO: add to calc_APV()
         self.attacker_ID = 0
         self.attacker_list = []
         self.attacker_template = attacker_class(self, self.uncertain_scheme, self.attacker_ID)
         self.attacker_list.append(
             attacker_class(self, self.uncertain_scheme, self.attacker_ID))  # for avoid index out of range eror.
         self.new_attacker_probability = 0  # 1  # 0 means only one attacker in game.
-        self.collusion_attack_probability = 1
         self.attacker_number = 1
         self.defender = defender_class(self, self.uncertain_scheme)
         self.game_over = False

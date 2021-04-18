@@ -161,8 +161,8 @@ def set_security_vulnerability(G, sv, ev, uv, ev_lambda, T_rekey,
     for n in G.nodes():
         if G.nodes[n]["type"] == 0:  # if IoT
             G.nodes[n]["software vulnerability"] = [
-                #                 random.randint(1, 5) for iter in range(sv)
-                random.randint(1, Iot_upper_vul) for iter in range(sv)
+                                random.randint(1, 5) for iter in range(sv)
+                # random.randint(1, Iot_upper_vul) for iter in range(sv)
             ]
             G.nodes[n]["original_encryption_vulnerability"] = [
                 random.randint(5, 10) for iter in range(ev)
@@ -172,8 +172,8 @@ def set_security_vulnerability(G, sv, ev, uv, ev_lambda, T_rekey,
             ]
         elif G.nodes[n]["type"] == 1:  # if Web Server
             G.nodes[n]["software vulnerability"] = [
-                #                 random.randint(3, 7) for iter in range(sv)
-                random.randint(1, web_data_upper_vul) for iter in range(sv)
+                                random.randint(3, 7) for iter in range(sv)
+                # random.randint(1, web_data_upper_vul) for iter in range(sv)
             ]
             G.nodes[n]["original_encryption_vulnerability"] = [
                 random.randint(1, 3) for iter in range(ev)
@@ -183,8 +183,8 @@ def set_security_vulnerability(G, sv, ev, uv, ev_lambda, T_rekey,
             ]
         elif G.nodes[n]["type"] == 2:  # if Dataset
             G.nodes[n]["software vulnerability"] = [
-                #                 random.randint(3, 7) for iter in range(sv)
-                random.randint(1, web_data_upper_vul) for iter in range(sv)
+                                random.randint(3, 7) for iter in range(sv)
+                # random.randint(1, web_data_upper_vul) for iter in range(sv)
             ]
             G.nodes[n]["original_encryption_vulnerability"] = [
                 random.randint(1, 3) for iter in range(ev)

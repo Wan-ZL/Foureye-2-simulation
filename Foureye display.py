@@ -380,6 +380,7 @@ def display_strategy_prob_distribution_in_one():
 
 
     # DHEU
+    notation = -1
     fig, ax = plt.subplots(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R2/def_strategy_counter.pkl", "rb")
@@ -883,6 +884,10 @@ def display_SysFail():
     ax.set_xticklabels(x_values)
     ax.set_xlabel("Reasons for System Failure", fontsize=font_size)
     ax.set_ylabel("number of simulation", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/SysFail_all_in_one_bar.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/SysFail_all_in_one_bar.png", dpi=figure_dpi)
     plt.show()
 
 
@@ -916,10 +921,10 @@ if __name__ == '__main__':
     # display_inside_attacker_number()
     # display_def_impact()
     # display_uncertainty()
-    display_SysFail()
+    # display_SysFail()
 
 
-    # display_TTSF_in_one_bar()
-    # display_inside_attacker_in_one()
-    # display_strategy_prob_distribution()
-    # display_strategy_prob_distribution_in_one()
+    display_TTSF_in_one_bar()
+    display_inside_attacker_in_one()
+    display_strategy_prob_distribution()
+    display_strategy_prob_distribution_in_one()
