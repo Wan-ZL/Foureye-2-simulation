@@ -7,7 +7,7 @@ from matplotlib.ticker import MaxNLocator
 
 
 def display_TTSF():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R0/Time_to_SF.pkl", "rb")
@@ -31,7 +31,7 @@ def display_TTSF():
         plt.show()
 
 def display_TTSF_in_one():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     # plt.figure(figsize=(figure_width, figure_high))
     fig, ax = plt.subplots(figsize=(figure_width, figure_high))
@@ -70,7 +70,7 @@ def display_TTSF_in_one():
 
 def display_TTSF_in_one_bar():
     # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
-    schemes = ["DD-IPI", "DD-Random-IPI", "DD-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI", "DD-PI"]
 
     plt.figure(figsize=(figure_width, figure_high))
     # fig, ax = plt.subplots(figsize=(figure_width, figure_high))
@@ -113,7 +113,7 @@ def display_TTSF_in_one_bar():
 
 
 def display_HEU():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
 
     # AHEU
@@ -180,7 +180,8 @@ def display_HEU():
 
 
 def display_strategy_count():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+
 
     # AHEU
     for schemes_index in range(len(schemes)):
@@ -193,9 +194,9 @@ def display_strategy_count():
             if len(att_strategy[key]) > max_length:
                 max_length = len(att_strategy[key])
 
-        attack_strategy_counter = np.zeros((9, max_length))  # 9 is the number of strategies
+        attack_strategy_counter = np.zeros((strategy_number, max_length))  # 9 is the number of strategies
         for key in att_strategy.keys():
-            for strategy_id in range(9):
+            for strategy_id in range(strategy_number):
                 attack_strategy_counter[strategy_id, :len(att_strategy[key])] += [k.count(strategy_id) for k in
                                                                                   att_strategy[key]]
 
@@ -203,7 +204,7 @@ def display_strategy_count():
 
         # AHEU By Number
         plt.figure(figsize=(figure_width, figure_high))
-        for strategy_id in range(9):
+        for strategy_id in range(strategy_number):
             plt.plot(range(max_length), attack_strategy_counter[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
         plt.xlabel("# of games", fontsize=font_size)
@@ -219,7 +220,7 @@ def display_strategy_count():
         # AHEU By Percentage
         plt.figure(figsize=(figure_width, figure_high))
         percentage_style_attack_strategy_counter = attack_strategy_counter / strategy_sum_in_each_game
-        for strategy_id in range(9):
+        for strategy_id in range(strategy_number):
             plt.plot(range(max_length), percentage_style_attack_strategy_counter[strategy_id],
                      label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
@@ -243,9 +244,9 @@ def display_strategy_count():
             if len(def_strategy[key]) > max_length:
                 max_length = len(def_strategy[key])
 
-        defend_strategy_counter = np.zeros((9, max_length))  # 9 is the number of strategies
+        defend_strategy_counter = np.zeros((strategy_number, max_length))  # 9 is the number of strategies
         for key in def_strategy.keys():
-            for strategy_id in range(9):
+            for strategy_id in range(strategy_number):
                 defend_strategy_counter[strategy_id, :len(def_strategy[key])] += [k.count(strategy_id) for k in
                                                                                   def_strategy[key]]
 
@@ -253,7 +254,7 @@ def display_strategy_count():
 
         # DHEU By Number
         plt.figure(figsize=(figure_width, figure_high))
-        for strategy_id in range(9):
+        for strategy_id in range(strategy_number):
             plt.plot(range(max_length), defend_strategy_counter[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
         plt.xlabel("# of games", fontsize=font_size)
@@ -269,7 +270,7 @@ def display_strategy_count():
         # DHEU By Percentage
         plt.figure(figsize=(figure_width, figure_high))
         percentage_style_defend_strategy_counter = defend_strategy_counter / strategy_sum_in_each_game
-        for strategy_id in range(9):
+        for strategy_id in range(strategy_number):
             plt.plot(range(max_length), percentage_style_defend_strategy_counter[strategy_id],
                      label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
@@ -283,7 +284,7 @@ def display_strategy_count():
         plt.show()
 
 def display_strategy_prob_distribution():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     # attacker
     for schemes_index in range(len(schemes)):
@@ -291,14 +292,13 @@ def display_strategy_prob_distribution():
         att_strategy = pickle.load(the_file)
         the_file.close()
 
-        strategy_counter = np.zeros(9)
+        strategy_counter = np.zeros(strategy_number)
         for key in att_strategy.keys():
             for strat_list in att_strategy[key]:
                 for strat_id in strat_list:
                     strategy_counter[strat_id] += 1
 
         strategy_probability = strategy_counter/np.sum(strategy_counter)
-        print(strategy_probability)
 
         plt.figure(figsize=(figure_width, figure_high))
         plt.bar(range(1, len(strategy_probability)+1), strategy_probability)
@@ -320,14 +320,13 @@ def display_strategy_prob_distribution():
         def_strategy = pickle.load(the_file)
         the_file.close()
 
-        strategy_counter = np.zeros(9)
+        strategy_counter = np.zeros(strategy_number)
         for key in def_strategy.keys():
             for strat_list in def_strategy[key]:
                 for strat_id in strat_list:
                     strategy_counter[strat_id] += 1
 
         strategy_probability = strategy_counter / np.sum(strategy_counter)
-        print(strategy_probability)
 
         plt.figure(figsize=(figure_width, figure_high))
         plt.bar(range(1, len(strategy_probability) + 1), strategy_probability)
@@ -342,9 +341,77 @@ def display_strategy_prob_distribution():
         plt.savefig("Figure/" + schemes[schemes_index] + "/def-Strat-prob-distribution.png", dpi=figure_dpi)
         plt.show()
 
+def display_strategy_prob_distribution_in_one():
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+
+    fig, ax = plt.subplots(figsize=(figure_width, figure_high))
+    width = 0.8
+    bar_group_number = len(schemes)
+    notation = -1
+    # attacker
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R2/att_strategy_counter.pkl", "rb")
+        att_strategy = pickle.load(the_file)
+        the_file.close()
+
+        strategy_counter = np.zeros(strategy_number)
+        for key in att_strategy.keys():
+            for strat_list in att_strategy[key]:
+                for strat_id in strat_list:
+                    strategy_counter[strat_id] += 1
+
+        strategy_probability = strategy_counter/np.sum(strategy_counter)
+
+        x = np.arange(1,len(strategy_probability)+1)
+        ax.bar(x + notation * width / bar_group_number, strategy_probability, width / bar_group_number, label=schemes[schemes_index])
+        notation += 1
+        # plt.bar(range(1, len(strategy_probability)+1), strategy_probability)
+    plt.legend()
+    plt.title(schemes[schemes_index], fontsize=font_size)
+    plt.xlabel("Attack Strategy ID", fontsize=font_size)
+    plt.ylabel("Probability", fontsize=font_size / 1.5)
+    plt.xticks(range(1, len(strategy_probability)+1), fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/att-Strat-prob-distribution.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/att-Strat-prob-distribution.png", dpi=figure_dpi)
+    plt.show()
+
+
+    # DHEU
+    fig, ax = plt.subplots(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R2/def_strategy_counter.pkl", "rb")
+        def_strategy = pickle.load(the_file)
+        the_file.close()
+
+        strategy_counter = np.zeros(strategy_number)
+        for key in def_strategy.keys():
+            for strat_list in def_strategy[key]:
+                for strat_id in strat_list:
+                    strategy_counter[strat_id] += 1
+
+        strategy_probability = strategy_counter / np.sum(strategy_counter)
+
+        ax.bar(x + notation * width / bar_group_number, strategy_probability, width / bar_group_number,
+               label=schemes[schemes_index])
+        notation += 1
+        # plt.bar(range(1, len(strategy_probability) + 1), strategy_probability)
+    plt.title(schemes[schemes_index], fontsize=font_size)
+    plt.xlabel("Defense Strategy ID", fontsize=font_size)
+    plt.ylabel("Probability", fontsize=font_size / 1.5)
+    plt.xticks(range(1, len(strategy_probability) + 1), fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/def-Strat-prob-distribution.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/def-Strat-prob-distribution.png", dpi=figure_dpi)
+    plt.show()
+
 
 def display_number_of_attacker():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R8/number_of_att.pkl", "rb")
@@ -390,7 +457,7 @@ def display_number_of_attacker():
 
 
 def display_attacker_CKC():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
 
     for schemes_index in range(len(schemes)):
@@ -442,7 +509,7 @@ def display_attacker_CKC():
 
 
 def display_eviction_record():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R_self_2/evict_reason.pkl", "rb")
@@ -450,7 +517,7 @@ def display_eviction_record():
         the_file.close()
 
         number_of_bar = 5
-        bar_label = ('Honeypot', 'DS 4', 'Attack Itself', 'IRS', 'AS8 Success')
+        bar_label = ('Honeypot', 'DS 4', 'Attack Itself', 'IDS', 'AS8 Success')
         evict_sum = np.zeros(number_of_bar)
         for key in evict_reason_all_result.keys():
             evict_sum += evict_reason_all_result[key]
@@ -472,7 +539,7 @@ def display_eviction_record():
 
 
 def display_per_Strategy_HEU():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
 
     for schemes_index in range(len(schemes)):
@@ -486,19 +553,19 @@ def display_per_Strategy_HEU():
                 max_length = len(AHEU_per_Strategy_all_result[key])
 
         # AHEU
-        AHEU_value_per_Strategy = np.zeros((9, max_length))
-        AHEU_counter_per_Strategy = np.zeros((9, max_length))
+        AHEU_value_per_Strategy = np.zeros((strategy_number, max_length))
+        AHEU_counter_per_Strategy = np.zeros((strategy_number, max_length))
         for key in AHEU_per_Strategy_all_result.keys():
             game_counter = 0
             for AHEU_per_game in AHEU_per_Strategy_all_result[key]:
                 for attacker_ID in AHEU_per_game:
                     AHEU_value_per_Strategy[:, game_counter] += AHEU_per_game[attacker_ID]
-                    AHEU_counter_per_Strategy[:, game_counter] += np.ones(9)
+                    AHEU_counter_per_Strategy[:, game_counter] += np.ones(strategy_number)
                 game_counter += 1
 
         AHEU_value_per_Strategy_averaged = AHEU_value_per_Strategy / AHEU_counter_per_Strategy
         plt.figure(figsize=(figure_width, figure_high))
-        for strategy_id in range(9):
+        for strategy_id in range(strategy_number):
             plt.plot(range(max_length), AHEU_value_per_Strategy_averaged[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
         plt.xlabel("# of games", fontsize=font_size)
@@ -522,20 +589,20 @@ def display_per_Strategy_HEU():
             if len(DHEU_per_Strategy_all_result[key]) > max_length:
                 max_length = len(DHEU_per_Strategy_all_result[key])
 
-        DHEU_value_per_Strategy = np.zeros((9, max_length))
-        DHEU_counter_per_Strategy = np.zeros((9, max_length))
+        DHEU_value_per_Strategy = np.zeros((strategy_number, max_length))
+        DHEU_counter_per_Strategy = np.zeros((strategy_number, max_length))
 
         for key in DHEU_per_Strategy_all_result.keys():
             game_counter = 0
             for DHEU_per_game in DHEU_per_Strategy_all_result[key]:
                 DHEU_value_per_Strategy[:, game_counter] += DHEU_per_game
-                DHEU_counter_per_Strategy[:, game_counter] += np.ones(9)
+                DHEU_counter_per_Strategy[:, game_counter] += np.ones(strategy_number)
                 game_counter += 1
 
         DHEU_value_per_Strategy_average = DHEU_value_per_Strategy / DHEU_counter_per_Strategy
 
         plt.figure(figsize=(figure_width, figure_high))
-        for strategy_id in range(9):
+        for strategy_id in range(strategy_number):
             plt.plot(range(max_length), DHEU_value_per_Strategy_average[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
         plt.xlabel("# of games", fontsize=font_size)
@@ -550,7 +617,7 @@ def display_per_Strategy_HEU():
 
 
 def display_compromise_probability():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R_self_5/compromise_probability_all_result.pkl", "rb")
@@ -571,7 +638,7 @@ def display_compromise_probability():
 
 
 def display_inside_attacker_number():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R_self_5/number_of_inside_attacker_all_result.pkl", "rb")
@@ -608,7 +675,7 @@ def display_inside_attacker_number():
 
 def display_inside_attacker_in_one():
     # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
-    schemes = ["DD-IPI", "DD-Random-IPI", "DD-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI", "DD-PI"]
     plt.figure(figsize=(figure_width, figure_high))
     color_circle = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
     for schemes_index in range(len(schemes)):
@@ -652,7 +719,7 @@ def display_inside_attacker_in_one():
     plt.show()
 
 def display_def_impact():
-    schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
 
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R_self_4/def_impact.pkl", "rb")
@@ -664,7 +731,7 @@ def display_def_impact():
             if len(def_impact_all_result[key]) > max_length:
                 max_length = len(def_impact_all_result[key])
 
-        total_def_impact = np.zeros((max_length, 9))
+        total_def_impact = np.zeros((max_length, strategy_number))
         def_impact_counter = np.zeros(max_length)
 
         for key in def_impact_all_result.keys():
@@ -674,12 +741,12 @@ def display_def_impact():
                 def_impact_counter[counter] += 1
                 counter += 1
 
-        average_def_impact = np.zeros((max_length, 9))
-        for index in range(9):
+        average_def_impact = np.zeros((max_length, strategy_number))
+        for index in range(strategy_number):
             average_def_impact[:,index] = total_def_impact[:,index]/def_impact_counter
 
         plt.figure(figsize=(figure_width, figure_high))
-        for index in range(9):
+        for index in range(strategy_number):
             plt.plot(range(max_length), average_def_impact[:,index], label=f"Stra {index + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
         plt.xlabel("# of games", fontsize=font_size)
@@ -694,7 +761,7 @@ def display_def_impact():
 
 def display_uncertainty():
     # attacker uncertainty average result
-    schemes =  ["DD-IPI", "DD-Random-IPI", "DD-PI"]#, "DD-PI", "DD-Random-PI", "DD-ML-PI"]
+    # schemes =  ["DD-IPI", "DD-Random-IPI", "DD-PI"]#, "DD-PI", "DD-Random-PI", "DD-ML-PI"]
 
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
@@ -797,6 +864,9 @@ if __name__ == '__main__':
     axis_size = 20
     marker_size = 10
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
+    strategy_number = 8
+    schemes = ["DD-IPI", "DD-Random-IPI", "DD-PI"]
+
 
     os.makedirs("Figure", exist_ok=True)
     # Display
@@ -811,8 +881,9 @@ if __name__ == '__main__':
     # display_compromise_probability()
     # display_inside_attacker_number()
     # display_def_impact()
-    # display_uncertainty()
-
+    display_uncertainty()
+    #
     display_TTSF_in_one_bar()
     display_inside_attacker_in_one()
     display_strategy_prob_distribution()
+    display_strategy_prob_distribution_in_one()

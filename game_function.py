@@ -39,8 +39,10 @@ class game_class:
         print(f"Sim {simulation_id} creating game")
         self.lifetime = 1
         self.CKC_number = 6
-        self.strategy_number =8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
+        self.strategy_number = 8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
         self.use_bundle = False      # Note: False means defender only use one strategy each game
+        self.enable_IRS_recheck = False     # True means enable IRS rechecking
+        self.enable_IRS_recover = False     # True means enable IRS recovery
         self.DD_using = DD_using
         self.decision_scheme = decision_scheme
         self.scheme_name = scheme_name
@@ -232,25 +234,27 @@ class game_class:
             if self.defender.network.nodes[index]["compromised_status"] == True:
                 # IRS inspection
                 if self.graph.network.nodes[index]["compromised_status"] == False:
-                    if random.random() < IRS_inspection_prob:
+                    if random.random() < IRS_inspection_prob and self.enable_IRS_recheck:
+
                         self.defender.network.nodes[index]["compromised_status"] = False
-                else:
-                    # No-DD means NIDS doesn't remain attacker in system
-                    if not self.DD_using:
-                        if display:
-                            print(f"Evict node {index}, No DD using")
-                        evict_a_node_without_update_criticality(index, self.graph.network,
-                                                    self.defender.network, get_network_list(self.attacker_list))
-                        # self.NIDS_eviction[experiment_index_record] += 1
                         continue
 
-                    if self.graph.network.has_node(index):
-                        if self.graph.network.nodes[index]["importance"] > Th_risk:
-                            if display:
-                                print(f"Evict node {index}, importance > Th_risk")
-                            evict_a_node_without_update_criticality(index, self.graph.network,
-                                                        self.defender.network,
-                                                        get_network_list(self.attacker_list))
+                # No-DD means NIDS doesn't remain attacker in system
+                if not self.DD_using:
+                    if display:
+                        print(f"Evict node {index}, No DD using")
+                    evict_a_node_without_update_criticality(index, self.graph.network,
+                                                self.defender.network, get_network_list(self.attacker_list))
+                    # self.NIDS_eviction[experiment_index_record] += 1
+                    continue
+
+                if self.graph.network.has_node(index):
+                    if self.graph.network.nodes[index]["importance"] > Th_risk:
+                        if display:
+                            print(f"Evict node {index}, importance > Th_risk")
+                        evict_a_node_without_update_criticality(index, self.graph.network,
+                                                    self.defender.network,
+                                                    get_network_list(self.attacker_list))
                             # self.NIDS_eviction[experiment_index_record] += 1
 
 
@@ -261,6 +265,10 @@ class game_class:
             update_criticality(G_att)
 
     def IRS_recover(self):
+        if not self.enable_IRS_recover:
+            return
+
+
         # decrease "recover_time", only recover the node with "recover_time" = 1
         all_nodes = self.graph.network.nodes(data=False)
         for index in all_nodes:
@@ -286,6 +294,7 @@ class game_class:
                     else:
                         self.graph.network.nodes[index]["recover_time"] = random.randint(
                             recover_min_time, recover_max_time)
+
 
     def update_graph(self):
         update_criticality(self.graph.network)
