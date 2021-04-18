@@ -851,6 +851,40 @@ def display_uncertainty():
     plt.savefig("Figure/All-In-One/def-uncertain-AllInOne.png", dpi=figure_dpi)
     plt.show()
 
+def autolabel(rects, ax):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    decimal_number = 3
+    for rect in rects:
+        height = round(rect.get_height(), decimal_number)
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+def display_SysFail():
+    fig, ax = plt.subplots(figsize=(figure_width, figure_high))
+    width = 0.2
+    shift_value = [- width / 2 - width, - width / 2, + width / 2, width / 2 + width]
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R_self_3/system_fail.pkl", "rb")
+        SysFail_reason = pickle.load(the_file)
+        the_file.close()
+
+        print(SysFail_reason)
+        y_values = SysFail_reason
+        temp_x = np.arange(len(y_values))
+        rects = ax.bar(temp_x + shift_value[schemes_index], y_values, width, label=schemes[schemes_index])
+        autolabel(rects, ax)
+
+    x_values = ["All node Evicted", "SF condition 1", "SF condition 2"]
+    ax.legend(prop={"size": legend_size})
+    ax.set_xticks(temp_x)
+    ax.set_xticklabels(x_values)
+    ax.set_xlabel("Reasons for System Failure", fontsize=font_size)
+    ax.set_ylabel("number of simulation", fontsize=font_size)
+    plt.show()
+
 
 if __name__ == '__main__':
     # preset values
@@ -881,9 +915,11 @@ if __name__ == '__main__':
     # display_compromise_probability()
     # display_inside_attacker_number()
     # display_def_impact()
-    display_uncertainty()
-    #
-    display_TTSF_in_one_bar()
-    display_inside_attacker_in_one()
-    display_strategy_prob_distribution()
-    display_strategy_prob_distribution_in_one()
+    # display_uncertainty()
+    display_SysFail()
+
+
+    # display_TTSF_in_one_bar()
+    # display_inside_attacker_in_one()
+    # display_strategy_prob_distribution()
+    # display_strategy_prob_distribution_in_one()

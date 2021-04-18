@@ -48,7 +48,7 @@ def defender_uncertainty_update(att_detect, def_monit_time, def_strategy_number,
 
     # (scheme change here!)
     if uncertain_scheme:
-        return uncertainty
+        return uncertainty      # for test. orignial: uncertainty
     else:
         return 0
 
@@ -646,7 +646,7 @@ class defender_class:
         self.deception_tech_used = False
         self.uncertain_scheme = uncertain_scheme
         if self.uncertain_scheme:
-            self.uncertainty = 1  # 1 # 100% uncertainty at beginning  (scheme change here!)
+            self.uncertainty = 1  # test, orignial 1
         else:
             self.uncertainty = 0
         self.decision_scheme = game.decision_scheme
@@ -712,7 +712,7 @@ class defender_class:
         self.dec = 0
         self.deception_tech_used = False
         if self.uncertain_scheme:
-            self.uncertainty = 1  # (scheme change here!)
+            self.uncertainty = 1  # test, orignial 1
         else:
             self.uncertainty = 0
 

@@ -370,13 +370,13 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme, decision_
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     start = time.time()
-    simulation_time = 10
+    simulation_time = 50
     print(f"number of core: {multiprocessing.cpu_count()}")
     # game_start()
     # 0 means random, 1 means HEU, 2 means ML
     # (current_scheme, DD_using, uncertain_scheme, decision_scheme, simulation_time)
-    run_sumulation_group_1("DD-Random-IPI", True, True, 0, simulation_time)
-    # run_sumulation_group_1("DD-IPI", True, True, 1, simulation_time)
+    # run_sumulation_group_1("DD-Random-IPI", True, True, 0, simulation_time)
+    run_sumulation_group_1("DD-IPI", True, True, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-IPI", True, True, 2, simulation_time)
     # run_sumulation_group_1("DD-Random-PI", True, False, 0, simulation_time)
     # run_sumulation_group_1("DD-PI", True, False, 1, simulation_time)

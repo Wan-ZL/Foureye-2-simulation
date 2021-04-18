@@ -102,7 +102,7 @@ def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_s
 
     # (scheme change here!)
     if uncertain_scheme:
-        return uncertainty
+        return 0 # for test. orignial: uncertainty
     else:
         return 0
 
@@ -1026,7 +1026,7 @@ class attacker_class:
         self.uncertain_scheme = uncertain_scheme
         if self.uncertain_scheme:
             # 1  # 100% uncertainty at beginning  (scheme change here!)
-            self.uncertainty = 1
+            self.uncertainty = 0 # test, orignial 1
         else:
             self.uncertainty = 0
         self.HEU = np.zeros(self.strategy_number)
