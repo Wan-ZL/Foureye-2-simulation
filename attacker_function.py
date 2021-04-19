@@ -67,8 +67,8 @@ def att_strategy_cost(strategy_number):
     attack_cost[2] = 3  # test: orignial 3
     attack_cost[3] = 3  # test: orignial 3
     attack_cost[4] = 1
-    attack_cost[5] = 3
-    attack_cost[6] = 2
+    attack_cost[5] = 3  # test: orignial 3
+    attack_cost[6] = 2  # test: orignial 2
     attack_cost[7] = 3  # test: orignial 3
     if strategy_number-1==8: attack_cost[8] = 0
 
@@ -104,7 +104,7 @@ def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_s
     if uncertain_scheme:
         return uncertainty # for test. orignial: uncertainty
     else:
-        return 0
+        return 0            # for test. orignial: 0
 
 
 # In[7]:
@@ -145,7 +145,7 @@ def attack_impact(G, new_compromised_list):
     total_criticality = 0
     for n in new_compromised_list:
         total_criticality += G.nodes[n]["criticality"]
-    ai = total_criticality / N
+    ai = total_criticality #/ N  # for test, original uncomment
     return ai
 
 
@@ -205,7 +205,7 @@ def attack_AS_2(node_info_list, G_real, G_att, G_def, P_fake,
                 attack_detect_prob, location, compromise_probability):
     attack_cost = 3
     attack_result = {"attack_cost": attack_cost, "ids": []}
-    max_number_of_phishing = 10
+    max_number_of_phishing = 5 # was 10
 
     # fake key probability
     if random.random() <= P_fake:
@@ -298,6 +298,7 @@ def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
     attacked_adjacent = []
 
     for node_id in collection_list:
+    # for node_id in G_real.nodes():      # test, original: above one
         if not G_real.nodes[node_id]["evicted_mark"]:
             # if attacker detect deception, use real network
             if random.random() < attack_detect_prob:
@@ -306,7 +307,7 @@ def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
                 attacked_adjacent += graph_function.adjacent_node(G_att, node_id)
 
     attacked_adjacent = list(set(attacked_adjacent))
-
+    # print(attacked_adjacent)
     for n in attacked_adjacent:
         if G_att.nodes[n]["compromised_status"] and G_real.nodes[n][
             "compromised_status"]:
@@ -318,7 +319,8 @@ def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
                 G_att.nodes[n]["compromised_status"] = True
 
                 attack_result["ids"].append(n)
-
+    # print("attack_result")
+    # print(attack_result["ids"])
     return attack_result
 
 
@@ -444,7 +446,7 @@ def attack_AS_5(G_real, G_att, G_def, attacker_locaton, attack_detect_prob):
         G_real.nodes[max_APV_id]["compromised_status"] = True
         G_att.nodes[max_APV_id]["compromised_status"] = True
 
-        attack_result["ids"].append(max_APV_id)
+        # attack_result["ids"].append(max_APV_id)
 
     return attack_result
 
@@ -866,9 +868,12 @@ def attacker_class_choose_strategy(self, def_strategy_number,
 
     # eq. 7
     # HEU = (1 - g) * EU_C + g * EU_CMS # old code
+    # flip coin (new code)
+    is_random = False
     if random.random() > g:
         HEU = EU_C
     else:
+        is_random = True
         HEU = np.zeros(self.strategy_number) # if is uncertainty level, randomly pick one.
 
     # Min-Max Normalization
@@ -892,6 +897,22 @@ def attacker_class_choose_strategy(self, def_strategy_number,
     for index in range(self.strategy_number):
         AHEU[index] = HEU[index] * self.strat_option[
             self.CKC_position, index]  # for Table 4
+
+    if is_random:
+        if self.new_att_random_idea:
+            AHEU = np.ones(self.strategy_number)    # test
+            # if 0 <= self.CKC_position <= 1: # outside type
+            #     AHEU = np.zeros(self.strategy_number)
+            #     AHEU[0] = 1
+            #     AHEU[1] = 1
+            # else:                           # inside type
+            #     AHEU = np.ones(self.strategy_number)
+            #     AHEU[0] = 0
+            #     AHEU[1] = 0
+                # AHEU = np.zeros(self.strategy_number)   # test
+                # AHEU[2] = 1                             # test
+
+
 
     if sum(AHEU) == 0:  # fix python 3.5 error
         self.chosen_strategy = random.choices(range(self.strategy_number))[0]
@@ -1002,7 +1023,17 @@ def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, c
             if display:
                 print("attack 9 executed")
 
-    self.impact_record[self.chosen_strategy] = attack_impact(G_real, attack_result["ids"])
+    # self.impact_record[self.chosen_strategy] = attack_impact(G_real, attack_result["ids"])    # original: uncomment
+    self.impact_count[self.chosen_strategy] += attack_impact(G_real, attack_result["ids"])   # for test
+    self.strategy_count[self.chosen_strategy] += 1
+    # temp_list = np.zeros(self.strategy_number)
+    for index in range(len(self.impact_record)):
+        if not self.strategy_count[index] == 0:
+            self.impact_record[index] = self.impact_count[index] / self.strategy_count[index]
+
+
+
+
     # print("Impact is:")
     # print(self.impact_record[self.chosen_strategy])
     if attack_result["ids"]:
@@ -1024,6 +1055,8 @@ class attacker_class:
         self.collusion_attack_probability = game.collusion_attack_probability
         self.collection_list = []
         self.location = None
+        self.impact_count = np.zeros(self.strategy_number)   # for test
+        self.strategy_count = np.zeros(self.strategy_number)   # for test
         self.impact_record = np.ones(self.strategy_number)  # attacker believe all strategy have full impact initially
         self.strat_cost = att_strategy_cost(self.strategy_number)
         self.strat_option = att_strategy_option_matrix(game.CKC_number, self.strategy_number)  # Table 4
@@ -1038,11 +1071,12 @@ class attacker_class:
         self.chosen_strategy = 0
         self.in_honeynet = False
         self.uncertain_scheme = uncertain_scheme
+        self.new_att_random_idea = game.new_att_random_idea
         if self.uncertain_scheme:
-            # 1  # 100% uncertainty at beginning  (scheme change here!)
+            # 1  # 100% uncertainty at beginning (scheme change here!)
             self.uncertainty = 1 # test, orignial 1
         else:
-            self.uncertainty = 0
+            self.uncertainty = 0    # test, orignial 0
         self.HEU = np.zeros(self.strategy_number)
         self.compromised_nodes = []
         self.EU_C = None
@@ -1065,6 +1099,10 @@ class attacker_class:
         if self.CKC_position != 5:
             self.CKC_position += 1
 
+        # test reset impact
+        # self.impact_count = np.zeros(self.strategy_number)  # for test
+        # self.strategy_count = np.zeros(self.strategy_number)  # for test
+
 
     def reset_attribute(self):
         pass
@@ -1084,8 +1122,8 @@ class attacker_class:
             observed_action_list.append(random.randrange(0, len(self.observed_strategy_count)))
 
         for observed_action_id in observed_action_list:
-            self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1
-            self.observed_CKC_count[observed_CKC_id] += 1
+            self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1    # for testt
+            self.observed_CKC_count[observed_CKC_id] += 1                         # for test
 
     def observe_opponent_old(self, chosen_strategy_list):
         # observe opponent action in one game

@@ -41,8 +41,10 @@ class game_class:
         self.CKC_number = 6
         self.strategy_number = 8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
         self.use_bundle = False      # Note: False means defender only use one strategy each game
-        self.enable_IRS_recheck = True     # True means enable IRS rechecking
+        self.enable_IRS_recheck = False     # True means enable IRS rechecking
         self.enable_IRS_recover = False     # True means enable IRS recovery
+        self.new_att_random_idea = True     # new idea discussed in email
+        self.new_attacker_probability = 0  # 1  # 0 means only one attacker in game.
         self.DD_using = DD_using
         self.decision_scheme = decision_scheme
         self.scheme_name = scheme_name
@@ -56,7 +58,6 @@ class game_class:
         self.attacker_template = attacker_class(self, self.uncertain_scheme, self.attacker_ID)
         self.attacker_list.append(
             attacker_class(self, self.uncertain_scheme, self.attacker_ID))  # for avoid index out of range eror.
-        self.new_attacker_probability = 0  # 1  # 0 means only one attacker in game.
         self.attacker_number = 1
         self.defender = defender_class(self, self.uncertain_scheme)
         self.game_over = False
@@ -384,7 +385,7 @@ class game_class:
                     attacker.collection_list.remove(index)
 
     # Add attacker with probability. If no attacker in list, add one.
-    def new_attacker(self, simulation_id):
+    def new_attacker(self, simulation_id, defender):
         if random.random() < self.new_attacker_probability or len(self.attacker_list)==0:
             self.attacker_number += 1
             print(
@@ -394,6 +395,7 @@ class game_class:
             self.attacker_ID += 1
             self.attacker_list.append(
                 attacker_class(self, self.uncertain_scheme, self.attacker_ID))
+            # defender.reset_attribute(defender.CKC_number) # reset defender (for test)
 
     def count_number_of_evicted_attacker(self):
         counter = 0
@@ -492,8 +494,9 @@ class game_class:
         # self.def_EU_C = np.vstack((self.def_EU_C, self.defender.EU_C))
         # self.def_EU_CMS = np.vstack((self.def_EU_CMS, self.defender.EU_CMS))
         # # attacker/defender impact
-        # self.att_impact = np.vstack(
-        #     (self.att_impact, self.attacker.impact_record))
+        for attacker in self.attacker_list:
+            self.att_impact = np.vstack(
+                (self.att_impact, attacker.impact_record))
         self.def_impact = np.vstack(
             (self.def_impact, self.defender.impact_record))
         # # HEU in DD IPI

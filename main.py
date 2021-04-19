@@ -30,7 +30,6 @@ def game_start(simulation_id=1,
     # return
     while (not game.game_over):
         print(game.lifetime)
-
         game.defender_round()
         game.evict_reason_history[1] += game.count_number_of_evicted_attacker()
         game.attacker_round(simulation_id)
@@ -51,7 +50,7 @@ def game_start(simulation_id=1,
 
         game.prepare_for_next_game()
 
-        game.new_attacker(simulation_id)
+        game.new_attacker(simulation_id, game.defender)
 
         # Test: vulnerability of compromised node right before game over
         if game.game_over:
@@ -375,7 +374,7 @@ if __name__ == '__main__':
     # game_start()
     # 0 means random, 1 means HEU, 2 means ML
     # (current_scheme, DD_using, uncertain_scheme, decision_scheme, simulation_time)
-    # run_sumulation_group_1("DD-Random-IPI", True, True, 0, simulation_time)
+    run_sumulation_group_1("DD-Random-IPI", True, True, 0, simulation_time)
     run_sumulation_group_1("DD-IPI", True, True, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-IPI", True, True, 2, simulation_time)
     # run_sumulation_group_1("DD-Random-PI", True, False, 0, simulation_time)

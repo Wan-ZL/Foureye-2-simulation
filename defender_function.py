@@ -34,7 +34,7 @@ def def_strategy_cost(strategy_number):
     defend_cost[6] = 2
     defend_cost[7] = 2
     if strategy_number-1 == 8: defend_cost[8] = 0
-
+    # defend_cost = np.ones(strategy_number)          # test
     return defend_cost
 
 
@@ -48,7 +48,7 @@ def defender_uncertainty_update(att_detect, def_monit_time, def_strategy_number,
 
     # (scheme change here!)
     if uncertain_scheme:
-        return uncertainty      # for test. orignial: uncertainty
+        return uncertainty     # for test. orignial: uncertainty
     else:
         return 0
 
@@ -658,6 +658,9 @@ class defender_class:
         self.S_j = np.ones(self.strategy_number)/self.strategy_number
         self.use_bundle = game.use_bundle
 
+    create_bundle = defender_class_create_bundle
+    choose_bundle = defender_class_choose_bundle
+    execute_strategy = defender_class_execute_strategy
 
 
     def observe_opponent(self, attacker_list):
@@ -680,8 +683,8 @@ class defender_class:
                     # if unsuccessful to observe CKC position, randomly guess one
                     observed_CKC_id = random.randrange(0,len(self.observed_CKC_count))
 
-                self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1
-                self.observed_CKC_count[observed_CKC_id] += 1
+                self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1    # for test
+                self.observed_CKC_count[observed_CKC_id] += 1                         # for test
 
 
 
@@ -695,7 +698,9 @@ class defender_class:
                                                        self.strategy_number,
                                                        self.uncertain_scheme)
 
-    def reset_attribute(self, attack_impact_record, CKC_number):
+    def reset_attribute(self, CKC_number):
+        self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))    # add for test
+        self.observed_CKC_count = np.zeros(self.CKC_number)     # add for teset
         self.key_time = 1
         self.monit_time = 1
         #         self.impact_record = 1 - attack_impact_record
@@ -709,10 +714,8 @@ class defender_class:
         else:
             self.uncertainty = 0
 
-    #     choose_strategy = defender_class_choose_strategy
-    create_bundle = defender_class_create_bundle
-    choose_bundle = defender_class_choose_bundle
-    execute_strategy = defender_class_execute_strategy
+
+
 
     def decide_CKC_posi(self, att_CKC_list):
         # Selection Scheme. In 'random', defender randomly select bundle without consider CKC

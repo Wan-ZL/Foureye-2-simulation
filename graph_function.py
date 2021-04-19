@@ -54,6 +54,8 @@ def set_type_for_HP(H_G, low_inter, high_inter):
 
 def adjacent_node(G, node_id):
     return_list = []
+    if node_id is None:
+        return return_list
 
     adjacent_list = [i for i in G[node_id]]
     if G.nodes[node_id]["type"] == 3:  # if node is honeynet

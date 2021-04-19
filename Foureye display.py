@@ -863,7 +863,7 @@ def autolabel(rects, ax):
                     textcoords="offset points",
                     ha='center', va='bottom')
 
-def display_SysFail():
+def display_SysFail_in_one():
     fig, ax = plt.subplots(figsize=(figure_width, figure_high))
     width = 0.2
     shift_value = [- width / 2 - width, - width / 2, + width / 2, width / 2 + width]
@@ -890,6 +890,42 @@ def display_SysFail():
     plt.savefig("Figure/All-In-One/SysFail_all_in_one_bar.png", dpi=figure_dpi)
     plt.show()
 
+def display_impact():
+    # Attacker impact
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R_self_4/att_impact.pkl", "rb")
+        att_impact_all_result = pickle.load(the_file)
+        the_file.close()
+
+        plt.figure(figsize=(figure_width, figure_high))
+        max_length = 0
+        for key in att_impact_all_result.keys():
+            if max_length < len(att_impact_all_result[key]):
+                max_length = len(att_impact_all_result[key])
+
+        average_impact = []
+        for index in range(max_length):
+            sum_on_index = 0
+            number_on_index = 0
+            att_impact = np.zeros(8)
+            for key in att_impact_all_result.keys():
+                if len(att_impact_all_result[key]) > 0:
+                    att_impact = np.add(att_impact, att_impact_all_result[key][0])
+                    att_impact_all_result[key] = np.delete(att_impact_all_result[key], 0, 0)
+                    number_on_index += 1
+            average_impact.append((att_impact / number_on_index).tolist())
+        average_impact = np.array(average_impact)
+
+        for index in range(8):
+            plt.plot(range(max_length), average_impact[:, index], linestyle=all_linestyle[index], label=f"Stra {index + 1}")
+        plt.legend(prop={"size": legend_size})
+        plt.title(schemes[schemes_index], fontsize=font_size)
+        plt.xlabel("number of games", fontsize=font_size)
+        plt.ylabel(f"Att's impact in {schemes[schemes_index]}", fontsize=font_size)
+        os.makedirs("Figure/" + schemes[schemes_index], exist_ok=True)
+        plt.savefig("Figure/" + schemes[schemes_index] + "/attack-impact-of-stratety.svg", dpi=figure_dpi)
+        plt.savefig("Figure/" + schemes[schemes_index] + "/attack-impact-of-stratety.png", dpi=figure_dpi)
+        plt.show()
 
 if __name__ == '__main__':
     # preset values
@@ -919,12 +955,14 @@ if __name__ == '__main__':
     # display_eviction_record()
     # display_compromise_probability()
     # display_inside_attacker_number()
-    # display_def_impact()
+    display_def_impact()
+    display_impact()
     # display_uncertainty()
-    # display_SysFail()
 
 
+
+    display_SysFail_in_one()
     display_TTSF_in_one_bar()
-    display_inside_attacker_in_one()
-    display_strategy_prob_distribution()
+    # display_inside_attacker_in_one()
+    # display_strategy_prob_distribution()
     display_strategy_prob_distribution_in_one()
