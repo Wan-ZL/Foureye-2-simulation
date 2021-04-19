@@ -41,7 +41,7 @@ class game_class:
         self.CKC_number = 6
         self.strategy_number = 8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
         self.use_bundle = False      # Note: False means defender only use one strategy each game
-        self.enable_IRS_recheck = False     # True means enable IRS rechecking
+        self.enable_IRS_recheck = True     # True means enable IRS rechecking
         self.enable_IRS_recover = False     # True means enable IRS recovery
         self.new_att_random_idea = True     # new idea discussed in email
         self.new_attacker_probability = 0  # 1  # 0 means only one attacker in game.
@@ -342,9 +342,7 @@ class game_class:
             self.TP += 1
             self.TN += 1
         else:
-            if any(elem in self.defender.optional_bundle_list for elem in [4, 5, 6, 7]):
-                print("bundle")
-                print(self.defender.optional_bundle_list)
+            if any(elem in self.defender.chosen_strategy_list for elem in [4, 5, 6, 7]):
                 self.TP += 1
                 self.TN += 1
         #             if self.defender.chosen_strategy == 4 or self.defender.chosen_strategy == 5 or self.defender.chosen_strategy == 6 or self.defender.chosen_strategy == 7:
