@@ -136,7 +136,7 @@ def calc_APV(G_att, G_real, node_ID, attack_cost, attack_detect_prob):
 # Attack Impact of given attack k of attacker i
 # new_compromised_list is new compromised node IDs (do not include already compromised node)
 # Return: ai_{ik}
-def attack_impact(G, new_compromised_list):
+def attack_impact(G, new_compromised_list, node_number):
     if len(new_compromised_list) == 0:
         return 0
 
@@ -145,7 +145,7 @@ def attack_impact(G, new_compromised_list):
     total_criticality = 0
     for n in new_compromised_list:
         total_criticality += G.nodes[n]["criticality"]
-    ai = total_criticality #/ N  # for test, original uncomment
+    ai = total_criticality / node_number #G.number_of_nodes() #/ G.number_of_nodes()  # for test, original uncomment
     return ai
 
 
@@ -900,17 +900,13 @@ def attacker_class_choose_strategy(self, def_strategy_number,
 
     if is_random:
         if self.new_att_random_idea:
-            AHEU = np.ones(self.strategy_number)    # test
-            # if 0 <= self.CKC_position <= 1: # outside type
-            #     AHEU = np.zeros(self.strategy_number)
-            #     AHEU[0] = 1
-            #     AHEU[1] = 1
-            # else:                           # inside type
-            #     AHEU = np.ones(self.strategy_number)
-            #     AHEU[0] = 0
-            #     AHEU[1] = 0
-                # AHEU = np.zeros(self.strategy_number)   # test
-                # AHEU[2] = 1                             # test
+            # AHEU = np.ones(self.strategy_number)    # Whole Random
+            if 0 <= self.CKC_position <= 1: # outside type
+                AHEU = np.zeros(self.strategy_number)
+                AHEU[0] = 1
+                AHEU[1] = 1
+            else:                           # inside type
+                AHEU = np.ones(self.strategy_number)
 
 
 
@@ -1023,13 +1019,13 @@ def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, c
             if display:
                 print("attack 9 executed")
 
-    # self.impact_record[self.chosen_strategy] = attack_impact(G_real, attack_result["ids"])    # original: uncomment
-    self.impact_count[self.chosen_strategy] += attack_impact(G_real, attack_result["ids"])   # for test
-    self.strategy_count[self.chosen_strategy] += 1
-    # temp_list = np.zeros(self.strategy_number)
-    for index in range(len(self.impact_record)):
-        if not self.strategy_count[index] == 0:
-            self.impact_record[index] = self.impact_count[index] / self.strategy_count[index]
+    self.impact_record[self.chosen_strategy] = attack_impact(G_real, attack_result["ids"], self.node_number)    # original: uncomment
+    # self.impact_count[self.chosen_strategy] += attack_impact(G_real, attack_result["ids"])   # for test
+    # self.strategy_count[self.chosen_strategy] += 1
+    # # temp_list = np.zeros(self.strategy_number)
+    # for index in range(len(self.impact_record)):
+    #     if not self.strategy_count[index] == 0:
+    #         self.impact_record[index] = self.impact_count[index] / self.strategy_count[index]
 
 
 
@@ -1051,6 +1047,7 @@ class attacker_class:
             print("create attacker")
         self.attacker_ID = attacker_ID
         self.network = copy.deepcopy(game.graph.network)  # attacker's view
+        self.node_number = game.graph.node_number
         self.strategy_number = game.strategy_number
         self.collusion_attack_probability = game.collusion_attack_probability
         self.collection_list = []

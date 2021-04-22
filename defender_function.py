@@ -28,7 +28,7 @@ def def_strategy_cost(strategy_number):
     defend_cost[0] = 1
     defend_cost[1] = 2
     defend_cost[2] = 2
-    defend_cost[3] = 3
+    defend_cost[3] = 2 # was 3
     defend_cost[4] = 3
     defend_cost[5] = 1
     defend_cost[6] = 2
@@ -42,7 +42,7 @@ def def_strategy_cost(strategy_number):
 
 
 def defender_uncertainty_update(att_detect, def_monit_time, def_strategy_number, uncertain_scheme):
-    mu = 8  # was 1
+    mu = 9  # was 1
 
     uncertainty = 1 - math.exp((-mu) * att_detect / def_monit_time)
 

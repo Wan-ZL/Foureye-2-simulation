@@ -330,7 +330,7 @@ def display_strategy_prob_distribution():
 
         plt.figure(figsize=(figure_width, figure_high))
         plt.bar(range(1, len(strategy_probability) + 1), strategy_probability)
-        plt.title(schemes[schemes_index], fontsize=font_size)
+        plt.title(schemes, fontsize=font_size)
         plt.xlabel("Defense Strategy ID", fontsize=font_size)
         plt.ylabel("Probability", fontsize=font_size / 1.5)
         plt.xticks(range(1, len(strategy_probability) + 1), fontsize=axis_size)
@@ -367,15 +367,15 @@ def display_strategy_prob_distribution_in_one():
         notation += 1
         # plt.bar(range(1, len(strategy_probability)+1), strategy_probability)
     plt.legend()
-    plt.title(schemes[schemes_index], fontsize=font_size)
+    plt.title(schemes, fontsize=font_size)
     plt.xlabel("Attack Strategy ID", fontsize=font_size)
     plt.ylabel("Probability", fontsize=font_size / 1.5)
     plt.xticks(range(1, len(strategy_probability)+1), fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
-    plt.savefig("Figure/All-In-One/att-Strat-prob-distribution.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/att-Strat-prob-distribution.png", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/att-Strat-prob-distribution_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/att-Strat-prob-distribution_AllInOne.png", dpi=figure_dpi)
     plt.show()
 
 
@@ -399,15 +399,16 @@ def display_strategy_prob_distribution_in_one():
                label=schemes[schemes_index])
         notation += 1
         # plt.bar(range(1, len(strategy_probability) + 1), strategy_probability)
-    plt.title(schemes[schemes_index], fontsize=font_size)
+    plt.legend()
+    plt.title(schemes, fontsize=font_size)
     plt.xlabel("Defense Strategy ID", fontsize=font_size)
     plt.ylabel("Probability", fontsize=font_size / 1.5)
     plt.xticks(range(1, len(strategy_probability) + 1), fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
-    plt.savefig("Figure/All-In-One/def-Strat-prob-distribution.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/def-Strat-prob-distribution.png", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/def-Strat-prob-distribution_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/def-Strat-prob-distribution_AllInOne.png", dpi=figure_dpi)
     plt.show()
 
 
@@ -955,14 +956,12 @@ if __name__ == '__main__':
     # display_eviction_record()
     # display_compromise_probability()
     # display_inside_attacker_number()
-    display_def_impact()
-    display_impact()
-    # display_uncertainty()
+    # display_def_impact()
+    # display_impact()
+    # display_strategy_prob_distribution()
 
-
-
+    display_uncertainty()
     display_SysFail_in_one()
     display_TTSF_in_one_bar()
-    # display_inside_attacker_in_one()
-    # display_strategy_prob_distribution()
+    display_inside_attacker_in_one()
     display_strategy_prob_distribution_in_one()
