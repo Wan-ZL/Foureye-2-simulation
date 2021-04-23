@@ -900,13 +900,13 @@ def attacker_class_choose_strategy(self, def_strategy_number,
 
     if is_random:
         if self.new_att_random_idea:
-            # AHEU = np.ones(self.strategy_number)    # Whole Random
-            if 0 <= self.CKC_position <= 1: # outside type
-                AHEU = np.zeros(self.strategy_number)
-                AHEU[0] = 1
-                AHEU[1] = 1
-            else:                           # inside type
-                AHEU = np.ones(self.strategy_number)
+            AHEU = np.ones(self.strategy_number)    # Whole Random
+            # if 0 <= self.CKC_position <= 1: # outside type
+            #     AHEU = np.zeros(self.strategy_number)
+            #     AHEU[0] = 1
+            #     AHEU[1] = 1
+            # else:                           # inside type
+            #     AHEU = np.ones(self.strategy_number)
 
 
 
