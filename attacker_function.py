@@ -94,17 +94,20 @@ def update_strategy_probability(opponent_strat_history):
 # In[6]:
 
 
-def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_scheme):
-    lambd = 0.8  # was 2
+def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_scheme, decision_scheme):
+    lambd = 1  # was 2
 
     # df = 1 + (1 - att_detect) * dec
     uncertainty = 1 - math.exp((-lambd) * (1 + (1 - att_detect) * dec) / att_in_system_time)
 
     # (scheme change here!)
-    if uncertain_scheme:
-        return uncertainty # for test. orignial: uncertainty
+    if decision_scheme == 0:
+        return 1
     else:
-        return 0            # for test. orignial: 0
+        if uncertain_scheme:
+            return uncertainty # for test. orignial: uncertainty
+        else:
+            return 0            # for test. orignial: 0
 
 
 # In[7]:
@@ -808,112 +811,86 @@ def array_normalization(array):
 
 def attacker_class_choose_strategy(self, def_strategy_number,
                                    defend_cost_record, defend_impact_record):
-    # attacker is 100% sure of CKC subgame
-    P_subgame = np.zeros(self.CKC_number + 1)
-    P_subgame[self.CKC_position] = 1
+    if random.random() > self.uncertainty:
+        # certain level
+        S_j = np.ones(self.strategy_number) / self.strategy_number
 
-    # since defender(column player) doesn't have CKC stage, so S_j = c_j
+        c_kj = _2darray_normalization(self.observed_strategy_count)
+        p_k = array_normalization(self.observed_CKC_count)
+        for j in range(len(S_j)):
+            temp_S = 0
+            for k in range(len(p_k)):
+                temp_S += p_k[k] * c_kj[k][j]
+            S_j[j] = temp_S
+        self.S_j = S_j
 
-    # if sum(self.observed_strategy_count) != 0:  # old
-    #     S_j = self.observed_strategy_count / np.sum(self.observed_strategy_count)
-    # else:
-    #     S_j = np.ones(self.observed_strategy_count) / len(self.observed_strategy_count)
+        # eq. 17
+        utility = np.zeros((self.strategy_number, def_strategy_number))
+        for i in range(self.strategy_number):
+            for j in range(def_strategy_number):
+                utility[i,
+                        j] = (self.impact_record[i] +
+                              defend_cost_record[j] / 3) - (
+                                     self.strat_cost[i] / 3 + defend_impact_record[j])
 
-    S_j = np.ones(self.strategy_number) / self.strategy_number
-    c_kj = _2darray_normalization(self.observed_strategy_count)
-    p_k = array_normalization(self.observed_CKC_count)
-    for j in range(len(S_j)):
-        temp_S = 0
-        for k in range(len(p_k)):
-            temp_S += p_k[k] * c_kj[k][j]
-        S_j[j] = temp_S
+        # normalization range
+        a = 1
+        b = 9
 
-
-    self.S_j = S_j
-
-    # eq. 19 (Uncertainty g)
-    g = self.uncertainty
-
-    # eq. 17
-    utility = np.zeros((self.strategy_number, def_strategy_number))
-    for i in range(self.strategy_number):
-        for j in range(def_strategy_number):
-            utility[i,
-                    j] = (self.impact_record[i] +
-                          defend_cost_record[j] / 3) - (
-                                 self.strat_cost[i] / 3 + defend_impact_record[j])
-
-    # normalization range
-    a = 1
-    b = 9
-
-    # eq. 8
-    EU_C = np.zeros(self.strategy_number)
-    for i in range(self.strategy_number):
-        for j in range(def_strategy_number):
-            EU_C[i] += S_j[j] * utility[i, j]
+        # eq. 8
+        EU_C = np.zeros(self.strategy_number)
+        for i in range(self.strategy_number):
+            for j in range(def_strategy_number):
+                EU_C[i] += S_j[j] * utility[i, j]
 
 
-    # eq. 9
-    EU_CMS = np.zeros(self.strategy_number)
-    for i in range(self.strategy_number):
-        w = np.argmin(utility[i])  # min utility index
-        EU_CMS[i] = self.strategy_number * S_j[w] * utility[i][w]
-    # Min-Max Normalization
-    # if (max(EU_CMS) - min(EU_CMS)) != 0:
-    #     EU_CMS = a + (EU_CMS - min(EU_CMS)) * (b - a) / (max(EU_CMS) - min(EU_CMS))
-    # else:
-    #     EU_CMS = np.ones(self.strategy_number) * a
-    # self.EU_CMS = EU_CMS
+        # eq. 9
+        EU_CMS = np.zeros(self.strategy_number)
+        for i in range(self.strategy_number):
+            w = np.argmin(utility[i])  # min utility index
+            EU_CMS[i] = self.strategy_number * S_j[w] * utility[i][w]
 
-    # eq. 7
-    # HEU = (1 - g) * EU_C + g * EU_CMS # old code
-    # flip coin (new code)
-    is_random = False
-    if random.random() > g:
         HEU = EU_C
+
+        # Min-Max Normalization
+        if (max(HEU) - min(HEU)) != 0:
+            HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
+        else:
+            HEU = np.ones(self.strategy_number) * a
+        self.HEU = HEU  # uncertainty case doesn't consider as real HEU
+
+        # eq. 23
+        AHEU = np.zeros(self.strategy_number)
+        for index in range(self.strategy_number):
+            AHEU[index] = HEU[index] * self.strat_option[
+                self.CKC_position, index]  # for Table 4
     else:
-        is_random = True
-        HEU = np.zeros(self.strategy_number) # if is uncertainty level, randomly pick one.
+        # uncertain level
+        # Whole Random:
+        AHEU = np.ones(self.strategy_number)
+        # Limited Random:
+        # if 0 <= self.CKC_position <= 1: # outside type
+        #     AHEU = np.zeros(self.strategy_number)
+        #     AHEU[0] = 1
+        #     AHEU[1] = 1
+        # else:                           # inside type
+        #     AHEU = np.ones(self.strategy_number)
 
-    # Min-Max Normalization
-    if (max(HEU) - min(HEU)) != 0:
-        HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
-    else:
-        HEU = np.ones(self.strategy_number) * a
-    self.HEU = HEU  # uncertainty case doesn't consider as real HEU
-    #     HEU = np.zeros(self.strategy_number)
-    #     for index in range(self.strategy_number):
-    #         HEU[index] = ((1 - g) * EU_C[index]) + (g * EU_CMS[index])
-    #
-    #     if random.random() > g:
-    #         HEU = EU_C
-    #         self.HEU = HEU  # uncertainty case doesn't consider as real HEU
-    #     else:
-    #         HEU = np.ones(self.strategy_number)
-
-    # eq. 23
-    AHEU = np.zeros(self.strategy_number)
-    for index in range(self.strategy_number):
-        AHEU[index] = HEU[index] * self.strat_option[
-            self.CKC_position, index]  # for Table 4
-
-    if is_random:
-        if self.new_att_random_idea:
-            AHEU = np.ones(self.strategy_number)    # Whole Random
-            # if 0 <= self.CKC_position <= 1: # outside type
-            #     AHEU = np.zeros(self.strategy_number)
-            #     AHEU[0] = 1
-            #     AHEU[1] = 1
-            # else:                           # inside type
-            #     AHEU = np.ones(self.strategy_number)
-
-
-
-    if sum(AHEU) == 0:  # fix python 3.5 error
+    # Selection Scheme
+    if self.decision_scheme == 0:  # for random selection scheme
         self.chosen_strategy = random.choices(range(self.strategy_number))[0]
+    elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
+        if sum(AHEU) == 0:  # fix python 3.5 error
+            self.chosen_strategy = random.choices(range(self.strategy_number))[0]
+        else:
+            self.chosen_strategy = random.choices(range(self.strategy_number), weights=AHEU, k=1)[0]
     else:
-        self.chosen_strategy = random.choices(range(self.strategy_number), weights=AHEU, k=1)[0]
+        raise Exception("Error: Unknown decision_scheme")
+
+    # if sum(AHEU) == 0:  # fix python 3.5 error
+    #     self.chosen_strategy = random.choices(range(self.strategy_number))[0]
+    # else:
+    #     self.chosen_strategy = random.choices(range(self.strategy_number), weights=AHEU, k=1)[0]
 
     return self.chosen_strategy
 
@@ -1065,10 +1042,10 @@ class attacker_class:
         self.P_fake = [0]  # (Make variable mutable) fake key condition controlled by DS7
         self.monit_time = 1
         self.detect_prob = random.uniform(0, 0.5)
+        self.decision_scheme = game.decision_scheme
         self.chosen_strategy = 0
         self.in_honeynet = False
         self.uncertain_scheme = uncertain_scheme
-        self.new_att_random_idea = game.new_att_random_idea
         if self.uncertain_scheme:
             # 1  # 100% uncertainty at beginning (scheme change here!)
             self.uncertainty = 1 # test, orignial 1
@@ -1158,7 +1135,7 @@ class attacker_class:
         # uncertainty
         self.uncertainty = attacker_uncertainty_update(self.in_system_time,
                                                        self.detect_prob, dec,
-                                                       self.uncertain_scheme)
+                                                       self.uncertain_scheme, self.decision_scheme)
 
     def random_moving(self):
         if self.location is None:

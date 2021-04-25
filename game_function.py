@@ -41,10 +41,9 @@ class game_class:
         self.CKC_number = 6
         self.strategy_number = 8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
         self.use_bundle = True      # Note: False means defender only use one strategy each game
-        self.enable_IRS_recheck = True     # True means enable IRS rechecking
-        self.enable_IRS_recover = True     # True means enable IRS recovery
-        self.new_att_random_idea = True     # new idea discussed in email
-        self.new_attacker_probability = 0.5  # 1  # 0 means only one attacker in game.
+        self.enable_IRS_recheck = False     # True means enable IRS rechecking
+        self.enable_IRS_recover = False     # True means enable IRS recovery
+        self.new_attacker_probability = 0.1 # 1  # 0 means only one attacker in game.
         self.DD_using = DD_using
         self.decision_scheme = decision_scheme
         self.scheme_name = scheme_name
@@ -228,7 +227,7 @@ class game_class:
     def IDS_IRS_evict(self):
         # IDS Eviction
         Th_risk = 7  # pre-set value
-        IRS_inspection_prob = 0.9 # probability to accurately detect false positive.
+        IRS_inspection_prob = 0.5 # 0.9 # probability to accurately detect false positive.
 
         all_nodes = self.graph.network.nodes(data=False)
         for index in all_nodes:
@@ -236,7 +235,6 @@ class game_class:
                 # IRS inspection
                 if self.graph.network.nodes[index]["compromised_status"] == False:
                     if random.random() < IRS_inspection_prob and self.enable_IRS_recheck:
-
                         self.defender.network.nodes[index]["compromised_status"] = False
                         continue
 

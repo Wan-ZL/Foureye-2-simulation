@@ -80,6 +80,7 @@ def display_TTSF_in_one_bar():
     coloar_order = plt.rcParams['axes.prop_cycle'].by_key()['color']
     y_result_list = []
     box_plot_set = []
+    error = []
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R0/Time_to_SF.pkl", "rb")
         # the_file = open("data/" + current_scheme + "/R0/Time_to_SF.pkl", "rb")
@@ -88,6 +89,7 @@ def display_TTSF_in_one_bar():
         TTSF_list = list(TTSF.values())
         box_plot_set.append(TTSF_list)
         y_result_list.append(np.mean(TTSF_list))
+        error.append(np.std(TTSF_list))
         # plt.bar(range(len(TTSF_list)), TTSF_list)
         # print(x + notation * width/bar_group_number)
         # print(width/bar_group_number)
@@ -97,10 +99,10 @@ def display_TTSF_in_one_bar():
         notation += 1
 
     # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.boxplot(box_plot_set, positions=range(len(box_plot_set)), whis=1)
-    plt.bar(range(len(y_result_list)), y_result_list, align='center')
+    # plt.boxplot(box_plot_set, positions=range(len(box_plot_set)), whis=1)
+    plt.bar(range(len(y_result_list)), y_result_list, yerr=error, capsize=10, align='center')
     for x in range(len(y_result_list)):
-        plt.text(x, y_result_list[x]+0.5 , round(y_result_list[x],2))
+        plt.text(x+0.03, y_result_list[x]+0.5 , round(y_result_list[x],2))
 
     plt.xticks(range(len(y_result_list)), schemes)
     plt.yticks(fontsize=axis_size)
@@ -109,6 +111,34 @@ def display_TTSF_in_one_bar():
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/TTSF_all_in_one_bar.svg", dpi=figure_dpi)
     plt.savefig("Figure/All-In-One/TTSF_all_in_one_bar.png", dpi=figure_dpi)
+    plt.show()
+
+
+def display_TTSF_vary_AttArivalProb():
+    folder_list = ["data (1)", "data (2)", "data (3)", "data (4)", "data (5)"]
+    vary_parameter = [0.1, 0.2, 0.3, 0.4, 0.5]
+    plt.figure(figsize=(figure_width, figure_high))
+    display_dataset = np.zeros((len(folder_list), len(schemes)))
+    error = np.zeros((len(folder_list), len(schemes)))
+    for folder_index in range(len(folder_list)):
+        for schemes_index in range(len(schemes)):
+            the_file = open("data/vary_parameter/MTTSF_AttArivalProb/"+ folder_list[folder_index] +"/"+ schemes[schemes_index] + "/R0/Time_to_SF.pkl", "rb")
+            TTSF = pickle.load(the_file)
+            # TTSF_list = sorted(list(TTSF.values()))
+            TTSF_list = list(TTSF.values())
+            display_dataset[folder_index, schemes_index] = np.mean(TTSF_list)
+            error[folder_index, schemes_index] = np.std(TTSF_list)
+
+    for scheme_index in range(len(schemes)):
+        plt.plot(vary_parameter, display_dataset[:,scheme_index], label=schemes[scheme_index])
+
+    plt.legend()
+    plt.xlabel("Attacker Arival Probability", fontsize=font_size)
+    plt.ylabel("MTTSF", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("data/vary_parameter/MTTSF_AttArivalProb", exist_ok=True)
+    plt.savefig("data/vary_parameter/MTTSF_AttArivalProb/MTTSF_vary_AttArivalProb.svg", dpi=figure_dpi)
+    plt.savefig("data/vary_parameter/MTTSF_AttArivalProb/MTTSF_vary_AttArivalProb.png", dpi=figure_dpi)
     plt.show()
 
 
@@ -367,7 +397,7 @@ def display_strategy_prob_distribution_in_one():
         notation += 1
         # plt.bar(range(1, len(strategy_probability)+1), strategy_probability)
     plt.legend()
-    plt.title(schemes, fontsize=font_size)
+    # plt.title(schemes, fontsize=font_size)
     plt.xlabel("Attack Strategy ID", fontsize=font_size)
     plt.ylabel("Probability", fontsize=font_size / 1.5)
     plt.xticks(range(1, len(strategy_probability)+1), fontsize=axis_size)
@@ -400,7 +430,7 @@ def display_strategy_prob_distribution_in_one():
         notation += 1
         # plt.bar(range(1, len(strategy_probability) + 1), strategy_probability)
     plt.legend()
-    plt.title(schemes, fontsize=font_size)
+    # plt.title(schemes, fontsize=font_size)
     plt.xlabel("Defense Strategy ID", fontsize=font_size)
     plt.ylabel("Probability", fontsize=font_size / 1.5)
     plt.xticks(range(1, len(strategy_probability) + 1), fontsize=axis_size)
@@ -866,8 +896,12 @@ def autolabel(rects, ax):
 
 def display_SysFail_in_one():
     fig, ax = plt.subplots(figsize=(figure_width, figure_high))
-    width = 0.2
-    shift_value = [- width / 2 - width, - width / 2, + width / 2, width / 2 + width]
+
+    # shift_value = [- width / 2 - width, - width / 2, + width / 2, width / 2 + width]
+    set_width = 0.9
+    width = set_width/len(schemes)
+    shift_value = (np.arange(len(schemes))- (len(schemes)-1)/2)/len(schemes) * set_width
+
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R_self_3/system_fail.pkl", "rb")
         SysFail_reason = pickle.load(the_file)
@@ -941,7 +975,9 @@ if __name__ == '__main__':
     marker_size = 10
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
-    schemes = ["DD-IPI", "DD-Random-IPI", "DD-PI"]
+    # schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "DD-Random-IPI", "DD-Random-PI"]
+    schemes = ["DD-IPI", "DD-PI", "DD-Random-IPI"]
+
 
 
     os.makedirs("Figure", exist_ok=True)
@@ -961,7 +997,10 @@ if __name__ == '__main__':
     # display_strategy_prob_distribution()
 
     display_uncertainty()
-    display_SysFail_in_one()
+    # display_SysFail_in_one()
     display_TTSF_in_one_bar()
-    display_inside_attacker_in_one()
+    # display_inside_attacker_in_one()
     display_strategy_prob_distribution_in_one()
+
+    # varying parameter
+    # display_TTSF_vary_AttArivalProb()

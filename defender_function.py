@@ -41,16 +41,17 @@ def def_strategy_cost(strategy_number):
 # In[31]:
 
 
-def defender_uncertainty_update(att_detect, def_monit_time, def_strategy_number, uncertain_scheme):
-    mu = 9  # was 1
+def defender_uncertainty_update(att_detect, def_monit_time, def_strategy_number, uncertain_scheme, decision_scheme):
+    mu = 10  # was 1
 
     uncertainty = 1 - math.exp((-mu) * att_detect / def_monit_time)
-
-    # (scheme change here!)
-    if uncertain_scheme:
-        return uncertainty     # for test. orignial: uncertainty
+    if decision_scheme == 0:
+        return 1
     else:
-        return 0
+        if uncertain_scheme:
+            return uncertainty     # for test. orignial: uncertainty
+        else:
+            return 0
 
 
 
@@ -436,117 +437,115 @@ def defender_class_create_bundle(self, DD_using):
 
 
 def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, attack_impact_record):
-    S_j = np.ones(self.strategy_number)/self.strategy_number # make sure the sum of S_j is 1
-    # print(S_j)
-    if self.decision_scheme == 1:
-        c_kj = _2darray_normalization(self.observed_strategy_count)
-        p_k = array_normalization(self.observed_CKC_count)
-        for j in range(len(S_j)):
-            temp_S = 0
-            for k in range(len(p_k)):
-                temp_S += p_k[k] * c_kj[k][j]
-            S_j[j] = temp_S
-    elif self.decision_scheme == 2:
-        # #  ============ old way ============
-        # # use trained model
-        # if self.uncertain_scheme:   # when consider uncertianty
-        #     # print("using IPI")
-        #     the_file = open("data/trained_ML_model/knn_trained_model_DD-IPI.pkl", "rb")
-        # else:                       # when not consider uncertainty
-        #     the_file = open("data/trained_ML_model/knn_trained_model_DD-PI.pkl", "rb")
-        # knn_model = pickle.load(the_file)
-        # the_file.close()
-        # y_pred = knn_model.predict([self.observed_strategy_count])
-        #
-        # if sum(y_pred[0]) != 0: # divide zero would get 'nan'
-        #     S_j = y_pred[0]/sum(y_pred[0])  # normalization
-        # # print(S_j)
+    if random.random() > self.uncertainty:
+        # certain level
+        S_j = np.ones(self.strategy_number)/self.strategy_number # make sure the sum of S_j is 1
+        # print(S_j)
+        if self.decision_scheme == 1:
+            c_kj = _2darray_normalization(self.observed_strategy_count)
+            p_k = array_normalization(self.observed_CKC_count)
+            for j in range(len(S_j)):
+                temp_S = 0
+                for k in range(len(p_k)):
+                    temp_S += p_k[k] * c_kj[k][j]
+                S_j[j] = temp_S
+        elif self.decision_scheme == 2:
+            # #  ============ old way ============
+            # # use trained model
+            # if self.uncertain_scheme:   # when consider uncertianty
+            #     # print("using IPI")
+            #     the_file = open("data/trained_ML_model/knn_trained_model_DD-IPI.pkl", "rb")
+            # else:                       # when not consider uncertainty
+            #     the_file = open("data/trained_ML_model/knn_trained_model_DD-PI.pkl", "rb")
+            # knn_model = pickle.load(the_file)
+            # the_file.close()
+            # y_pred = knn_model.predict([self.observed_strategy_count])
+            #
+            # if sum(y_pred[0]) != 0: # divide zero would get 'nan'
+            #     S_j = y_pred[0]/sum(y_pred[0])  # normalization
+            # # print(S_j)
 
-        # ======= predict strategy separately =======
-        # use trained model
-        if self.uncertain_scheme:  # when consider uncertianty
-            # print("using IPI")
-            the_file = open("data/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
-        else:  # when not consider uncertainty
-            the_file = open("data/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
-        knn_model_list = pickle.load(the_file)
-        the_file.close()
-        y_pred = np.zeros(self.strategy_number)
-        obser_stra_count_list_normalized = _2darray_normalization(self.observed_strategy_count_list)
-        for index in range(len(knn_model_list)):
-            # found bug here
-            # y_pred[index] = knn_model_list[index].predict(self.observed_strategy_count_list[:, index].reshape(1, -1))
-            y_pred[index] = knn_model_list[index].predict(obser_stra_count_list_normalized[:, index].reshape(1, -1))
+            # ======= predict strategy separately =======
+            # use trained model
+            if self.uncertain_scheme:  # when consider uncertianty
+                # print("using IPI")
+                the_file = open("data/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
+            else:  # when not consider uncertainty
+                the_file = open("data/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
+            knn_model_list = pickle.load(the_file)
+            the_file.close()
+            y_pred = np.zeros(self.strategy_number)
+            obser_stra_count_list_normalized = _2darray_normalization(self.observed_strategy_count_list)
+            for index in range(len(knn_model_list)):
+                # found bug here
+                # y_pred[index] = knn_model_list[index].predict(self.observed_strategy_count_list[:, index].reshape(1, -1))
+                y_pred[index] = knn_model_list[index].predict(obser_stra_count_list_normalized[:, index].reshape(1, -1))
 
-        # print(y_pred)
-        if sum(y_pred) != 0:  # divide zero would get 'nan'
-            S_j = y_pred / sum(y_pred)  # normalization
-        # ===========================================
+            # print(y_pred)
+            if sum(y_pred) != 0:  # divide zero would get 'nan'
+                S_j = y_pred / sum(y_pred)  # normalization
+            # ===========================================
 
-    self.S_j = S_j
-    if display:
-        print(f"S_j in def is {S_j}, sum is {sum(S_j)}")
+        self.S_j = S_j
+        if display:
+            print(f"S_j in def is {S_j}, sum is {sum(S_j)}")
 
-    # eq. 19 (Uncertainty g)
-    g = self.uncertainty
+        # eq. 17
+        utility = np.zeros((self.strategy_number, att_strategy_number))
+        for i in range(self.strategy_number):
+            for j in range(att_strategy_number):
+                utility[i,
+                        j] = (self.impact_record[i] +
+                              attack_cost_record[j] / 3) - (
+                                     self.strat_cost[i] / 3 + attack_impact_record[j])
 
-    # eq. 17
-    utility = np.zeros((self.strategy_number, att_strategy_number))
-    for i in range(self.strategy_number):
-        for j in range(att_strategy_number):
-            utility[i,
-                    j] = (self.impact_record[i] +
-                          attack_cost_record[j] / 3) - (
-                                 self.strat_cost[i] / 3 + attack_impact_record[j])
+        # normalization range
+        a = 1
+        b = 9
 
-    # normalization range
-    a = 1
-    b = 9
-
-    # eq. 8
-    EU_C = np.zeros(self.strategy_number)
-    for i in range(self.strategy_number):
-        for j in range(att_strategy_number):
-            EU_C[i] += S_j[j] * utility[i, j]
-
-
-    # eq. 9
-    EU_CMS = np.zeros(self.strategy_number)
-    for i in range(self.strategy_number):
-        w = np.argmin(utility[i])  # min utility index
-        EU_CMS[i] = self.strategy_number * S_j[w] * utility[i][w]
-    # Normalization
-    # if (max(EU_CMS) - min(EU_CMS)) != 0:
-    #     EU_CMS = a + (EU_CMS - min(EU_CMS)) * (b - a) / (max(EU_CMS) - min(EU_CMS))
-    # self.EU_CMS = EU_CMS
+        # eq. 8
+        EU_C = np.zeros(self.strategy_number)
+        for i in range(self.strategy_number):
+            for j in range(att_strategy_number):
+                EU_C[i] += S_j[j] * utility[i, j]
 
 
-    # HEU = (1 - g) * EU_C + g * EU_CMS # old code
-    if random.random() > g:
+        # eq. 9
+        EU_CMS = np.zeros(self.strategy_number)
+        for i in range(self.strategy_number):
+            w = np.argmin(utility[i])  # min utility index
+            EU_CMS[i] = self.strategy_number * S_j[w] * utility[i][w]
+
+
         HEU = EU_C
+
+
+        # Min-Max Normalization
+        if (max(HEU) - min(HEU)) != 0:
+            HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
+        else:
+            HEU = np.ones(self.strategy_number) * a
+        self.HEU = HEU  # uncertainty case doesn't consider as real HEU
+
+        bundle_HEU = []
+        bundle_lambda = 2
+
+        for bundle in self.optional_bundle_list:
+            C_DHEU_value = 0
+            for strategy_id in bundle:
+                C_DHEU_value += HEU[strategy_id]
+            C_DHEU_value = C_DHEU_value * math.exp(-bundle_lambda * len(bundle))
+            bundle_HEU.append(C_DHEU_value)
+
     else:
-        HEU = np.zeros(self.strategy_number)
+        # uncertain level
+        bundle_HEU = np.zeros(len(self.optional_bundle_list))
 
-    # Min-Max Normalization
-    if (max(HEU) - min(HEU)) != 0:
-        HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
-    else:
-        HEU = np.ones(self.strategy_number) * a
-    self.HEU = HEU  # uncertainty case doesn't consider as real HEU
 
-    bundle_HEU = []
-    bundle_lambda = 2
-
-    for bundle in self.optional_bundle_list:
-        C_DHEU_value = 0
-        for strategy_id in bundle:
-            C_DHEU_value += HEU[strategy_id]
-        C_DHEU_value = C_DHEU_value * math.exp(-bundle_lambda * len(bundle))
-        bundle_HEU.append(C_DHEU_value)
     # Selection Scheme
-    if self.decision_scheme == 0:  # for random selection scheme
-        self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
-    elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
+    # if self.decision_scheme == 0:  # for random selection scheme
+    #     self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
+    if self.decision_scheme == 0 or self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
         if sum(bundle_HEU) == 0:  # fix python 3.5 error
             self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
         else:
@@ -696,7 +695,7 @@ class defender_class:
         # uncertainty
         self.uncertainty = defender_uncertainty_update(att_detect, self.monit_time,
                                                        self.strategy_number,
-                                                       self.uncertain_scheme)
+                                                       self.uncertain_scheme, self.decision_scheme)
 
     def reset_attribute(self, CKC_number):
         self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))    # add for test

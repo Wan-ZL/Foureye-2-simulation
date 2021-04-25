@@ -19,10 +19,10 @@ from sklearn import svm
 # from keras.layers import Dense, Dropout, LSTM
 
 
-def generate_trained_ML(schemes, window_size, n_neighbors):
+def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
     for schemes_index in range(len(schemes)):
-        all_dataset_X = np.zeros((1, 9))
-        all_dataset_Y = np.zeros((1, 9))
+        all_dataset_X = np.zeros((1, strategy_number))
+        all_dataset_Y = np.zeros((1, strategy_number))
         path = "data/trainning_data/" + schemes[schemes_index]
         file_list = [f for f in os.listdir(path) if not f.startswith('.')]
         if len(file_list) == 0:
@@ -41,7 +41,7 @@ def generate_trained_ML(schemes, window_size, n_neighbors):
                 S = np.array(all_result_after_each_game_all_result[key])
 
                 # padding: [0....0]*window_size to head
-                S_with_zero_head = np.concatenate((np.zeros((window_size,9)), S), axis=0)
+                S_with_zero_head = np.concatenate((np.zeros((window_size,strategy_number)), S), axis=0)
 
                 # concatenate to dataset
                 all_dataset_X = np.concatenate((all_dataset_X, S_with_zero_head[:-1]), axis=0)
@@ -57,7 +57,7 @@ def generate_trained_ML(schemes, window_size, n_neighbors):
         total_R2_no_predict = 0
         total_MSE_predict = 0
         total_MSE_no_predict = 0
-        for index in range(9):
+        for index in range(strategy_number):
             # strate_dataset_X = all_dataset_X_normalized[:,index].reshape(-1, 1)
             # strate_dataset_Y = all_dataset_Y_normalized[:, index]
             strate_dataset_X = all_dataset_X_normalized[:, index]
@@ -139,7 +139,7 @@ def generate_trained_ML(schemes, window_size, n_neighbors):
 
 
 def array_normalization(_2d_array):
-    sum_array = np.ones((len(_2d_array),9))/9
+    sum_array = np.ones((len(_2d_array),strategy_number))/strategy_number
     for index in range(len(_2d_array)):
         if sum(_2d_array[index]) == 0:
             continue
@@ -155,14 +155,14 @@ def array_normalization(_2d_array):
 
 
 
-def display_prediction_result(schemes):
+def display_prediction_result(schemes, strategy_number):
     figure_high = 6
     figure_width = 7.5
 
     for schemes_index in range(len(schemes)):
         print(schemes[schemes_index])
-        all_dataset_X = np.zeros((1, 9))
-        all_dataset_Y = np.zeros((1, 9))
+        all_dataset_X = np.zeros((1, strategy_number))
+        all_dataset_Y = np.zeros((1, strategy_number))
         path = "data/trainning_data/" + schemes[schemes_index]
         file_list = [f for f in os.listdir(path) if not f.startswith('.')]
         if len(file_list) == 0:
@@ -215,8 +215,9 @@ if __name__ == '__main__':
     schemes = ["DD-IPI", "DD-PI"]
     window_size = 5
     n_neighbors = 100
-    generate_trained_ML(schemes,window_size,n_neighbors)
-    # display_prediction_result(schemes)
+    strategy_number = 8
+    generate_trained_ML(schemes,window_size,n_neighbors, strategy_number)
+    # display_prediction_result(schemes, strategy_number)
     print('The scikit-learn version is {}.'.format(sklearn.__version__))
 
 
