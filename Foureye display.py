@@ -975,8 +975,8 @@ if __name__ == '__main__':
     marker_size = 10
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
-    # schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "DD-Random-IPI", "DD-Random-PI"]
-    schemes = ["DD-IPI", "DD-PI", "DD-Random-IPI"]
+    schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "No-DD-IPI", "No-DD-PI",  "DD-Random"]
+    # schemes = ["DD-IPI", "DD-PI", "DD-Random-IPI"]
 
 
 
@@ -997,9 +997,9 @@ if __name__ == '__main__':
     # display_strategy_prob_distribution()
 
     display_uncertainty()
-    # display_SysFail_in_one()
+    display_SysFail_in_one()
     display_TTSF_in_one_bar()
-    # display_inside_attacker_in_one()
+    display_inside_attacker_in_one()
     display_strategy_prob_distribution_in_one()
 
     # varying parameter

@@ -1046,11 +1046,14 @@ class attacker_class:
         self.chosen_strategy = 0
         self.in_honeynet = False
         self.uncertain_scheme = uncertain_scheme
-        if self.uncertain_scheme:
-            # 1  # 100% uncertainty at beginning (scheme change here!)
-            self.uncertainty = 1 # test, orignial 1
+        if game.scheme_name == 0:
+            self.uncertainty = 1
         else:
-            self.uncertainty = 0    # test, orignial 0
+            if self.uncertain_scheme:
+                # 1  # 100% uncertainty at beginning (scheme change here!)
+                self.uncertainty = 1 # test, orignial 1
+            else:
+                self.uncertainty = 0    # test, orignial 0
         self.HEU = np.zeros(self.strategy_number)
         self.compromised_nodes = []
         self.EU_C = None

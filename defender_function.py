@@ -412,7 +412,7 @@ def defender_class_create_bundle(self, DD_using):
 
         # create all possible bundle
         all_strategy_bundle = []
-        for length in range(1, len(strategy_avaliable_ID_list)):
+        for length in range(1, len(strategy_avaliable_ID_list)+1):
             all_strategy_bundle.extend(
                 list(itertools.combinations(strategy_avaliable_ID_list, length)))
         # tuple to list
@@ -437,21 +437,34 @@ def defender_class_create_bundle(self, DD_using):
 
 
 def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, attack_impact_record):
+    S_j = np.ones(self.strategy_number) / self.strategy_number  # make sure the sum of S_j is 1
+    c_kj = _2darray_normalization(self.observed_strategy_count)
+    p_k = array_normalization(self.observed_CKC_count)
+    for j in range(len(S_j)):
+        temp_S = 0
+        for k in range(len(p_k)):
+            temp_S += p_k[k] * c_kj[k][j]
+        S_j[j] = temp_S
+    # save data for ML prediction
+    self.s_j_window_record = np.vstack([self.s_j_window_record, S_j])
+    self.s_j_window_record = np.delete(self.s_j_window_record, 0, 0)
+
+    # flip coin of uncertainty
     if random.random() > self.uncertainty:
         # certain level
-        S_j = np.ones(self.strategy_number)/self.strategy_number # make sure the sum of S_j is 1
-        # print(S_j)
         if self.decision_scheme == 1:
-            c_kj = _2darray_normalization(self.observed_strategy_count)
-            p_k = array_normalization(self.observed_CKC_count)
-            for j in range(len(S_j)):
-                temp_S = 0
-                for k in range(len(p_k)):
-                    temp_S += p_k[k] * c_kj[k][j]
-                S_j[j] = temp_S
+            pass
+            # c_kj = _2darray_normalization(self.observed_strategy_count)
+            # p_k = array_normalization(self.observed_CKC_count)
+            # for j in range(len(S_j)):
+            #     temp_S = 0
+            #     for k in range(len(p_k)):
+            #         temp_S += p_k[k] * c_kj[k][j]
+            #     S_j[j] = temp_S
         elif self.decision_scheme == 2:
+            # S_j = np.ones(self.strategy_number) / self.strategy_number # for teste
             # #  ============ old way ============
-            # # use trained model
+            # use trained model
             # if self.uncertain_scheme:   # when consider uncertianty
             #     # print("using IPI")
             #     the_file = open("data/trained_ML_model/knn_trained_model_DD-IPI.pkl", "rb")
@@ -459,11 +472,11 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
             #     the_file = open("data/trained_ML_model/knn_trained_model_DD-PI.pkl", "rb")
             # knn_model = pickle.load(the_file)
             # the_file.close()
-            # y_pred = knn_model.predict([self.observed_strategy_count])
+            # y_pred = knn_model.predict([self.S_j])
             #
             # if sum(y_pred[0]) != 0: # divide zero would get 'nan'
             #     S_j = y_pred[0]/sum(y_pred[0])  # normalization
-            # # print(S_j)
+            # print(S_j)
 
             # ======= predict strategy separately =======
             # use trained model
@@ -475,20 +488,16 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
             knn_model_list = pickle.load(the_file)
             the_file.close()
             y_pred = np.zeros(self.strategy_number)
-            obser_stra_count_list_normalized = _2darray_normalization(self.observed_strategy_count_list)
+            s_j_window_record_normalized = _2darray_normalization(self.s_j_window_record)
             for index in range(len(knn_model_list)):
                 # found bug here
-                # y_pred[index] = knn_model_list[index].predict(self.observed_strategy_count_list[:, index].reshape(1, -1))
-                y_pred[index] = knn_model_list[index].predict(obser_stra_count_list_normalized[:, index].reshape(1, -1))
+                # y_pred[index] = knn_model_list[index].predict(self.s_j_window_record[:, index].reshape(1, -1))
+                y_pred[index] = knn_model_list[index].predict(s_j_window_record_normalized[:, index].reshape(1, -1))
 
             # print(y_pred)
             if sum(y_pred) != 0:  # divide zero would get 'nan'
                 S_j = y_pred / sum(y_pred)  # normalization
             # ===========================================
-
-        self.S_j = S_j
-        if display:
-            print(f"S_j in def is {S_j}, sum is {sum(S_j)}")
 
         # eq. 17
         utility = np.zeros((self.strategy_number, att_strategy_number))
@@ -536,10 +545,12 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
                 C_DHEU_value += HEU[strategy_id]
             C_DHEU_value = C_DHEU_value * math.exp(-bundle_lambda * len(bundle))
             bundle_HEU.append(C_DHEU_value)
-
     else:
         # uncertain level
         bundle_HEU = np.zeros(len(self.optional_bundle_list))
+
+    # save for training ML model
+    self.S_j = S_j
 
 
     # Selection Scheme
@@ -641,19 +652,23 @@ class defender_class:
         self.subgrame_history = np.zeros(game.CKC_number + 1)
         self.deception_tech_used = False
         self.uncertain_scheme = uncertain_scheme
-        if self.uncertain_scheme:
-            self.uncertainty = 1  # test, orignial 1
-        else:
-            self.uncertainty = 0
-        self.decision_scheme = game.decision_scheme
         self.scheme_name = game.scheme_name
+        if self.scheme_name == 0:
+            self.uncertainty = 1
+        else:
+            if self.uncertain_scheme:
+                self.uncertainty = 1  # test, orignial 1
+            else:
+                self.uncertainty = 0
+        self.decision_scheme = game.decision_scheme
+
         self.HEU = np.zeros(self.strategy_number)
         self.EU_C = None
         self.EU_CMS = None
         self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))
         self.observed_CKC_count = np.zeros(self.CKC_number)
         self.ML_window_size = 5
-        self.observed_strategy_count_list = np.zeros((self.ML_window_size, self.strategy_number))
+        self.s_j_window_record = np.zeros((self.ML_window_size, self.strategy_number))
         self.S_j = np.ones(self.strategy_number)/self.strategy_number
         self.use_bundle = game.use_bundle
 
@@ -709,7 +724,7 @@ class defender_class:
         self.dec = 0
         self.deception_tech_used = False
         if self.uncertain_scheme:
-            self.uncertainty = 1  # test, orignial 1
+            self.uncertainty = 0  # test, orignial 1
         else:
             self.uncertainty = 0
 

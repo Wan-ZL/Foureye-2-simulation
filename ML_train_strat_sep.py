@@ -73,8 +73,7 @@ def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
             X_train, X_test, y_train, y_test = train_test_split(strate_dataset_section_X, strate_dataset_section_Y, test_size=0.1, random_state=1)
 
             # KNN
-            # n_neighbors = 60
-            model = neighbors.KNeighborsRegressor(n_neighbors, weights='distance', algorithm='brute').fit(X_train, y_train)
+            model = neighbors.KNeighborsRegressor(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
             # model = svm.SVR().fit(X_train, y_train)
             model_list.append(model)
 
@@ -214,7 +213,7 @@ if __name__ == '__main__':
     # schemes = ["DD-IPI", "DD-ML-IPI", "DD-Random-IPI"]
     schemes = ["DD-IPI", "DD-PI"]
     window_size = 5
-    n_neighbors = 100
+    n_neighbors = 50
     strategy_number = 8
     generate_trained_ML(schemes,window_size,n_neighbors, strategy_number)
     # display_prediction_result(schemes, strategy_number)
