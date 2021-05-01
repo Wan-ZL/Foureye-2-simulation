@@ -448,6 +448,8 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
     # save data for ML prediction
     self.s_j_window_record = np.vstack([self.s_j_window_record, S_j])
     self.s_j_window_record = np.delete(self.s_j_window_record, 0, 0)
+    self.action_window_record = np.vstack([self.action_window_record, self.ML_action_save])
+    self.action_window_record = np.delete(self.action_window_record, 0, 0)
 
     # flip coin of uncertainty
     if random.random() > self.uncertainty:
@@ -490,11 +492,11 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
             y_pred = np.zeros(self.strategy_number)
             s_j_window_record_normalized = _2darray_normalization(self.s_j_window_record)
             for index in range(len(knn_model_list)):
-                # found bug here
-                # y_pred[index] = knn_model_list[index].predict(self.s_j_window_record[:, index].reshape(1, -1))
+                # belief predict belief
                 y_pred[index] = knn_model_list[index].predict(s_j_window_record_normalized[:, index].reshape(1, -1))
+                # action predict belief
+                # y_pred[index] = knn_model_list[index].predict(self.action_window_record[:, index].reshape(1, -1))
 
-            # print(y_pred)
             if sum(y_pred) != 0:  # divide zero would get 'nan'
                 S_j = y_pred / sum(y_pred)  # normalization
             # ===========================================
@@ -626,7 +628,7 @@ def defender_class_execute_strategy(self, G_att_list, att_detect_list, graph, FN
 
 
 class defender_class:
-    def __init__(self, game, uncertain_scheme):
+    def __init__(self, game):
         if display: print("create defender")
         print('The scikit-learn version is {}.'.format(sklearn.__version__))
         self.network = copy.deepcopy(game.graph.network)  # defender's view
@@ -651,24 +653,25 @@ class defender_class:
         self.P_subgame = np.zeros(game.CKC_number + 1)  # Eq. 5: belief context
         self.subgrame_history = np.zeros(game.CKC_number + 1)
         self.deception_tech_used = False
-        self.uncertain_scheme = uncertain_scheme
+        self.uncertain_scheme = game.uncertain_scheme_def
         self.scheme_name = game.scheme_name
-        if self.scheme_name == 0:
+        self.decision_scheme = game.decision_scheme
+        if self.decision_scheme == 0:
             self.uncertainty = 1
         else:
             if self.uncertain_scheme:
                 self.uncertainty = 1  # test, orignial 1
             else:
                 self.uncertainty = 0
-        self.decision_scheme = game.decision_scheme
-
         self.HEU = np.zeros(self.strategy_number)
         self.EU_C = None
         self.EU_CMS = None
         self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))
+        self.ML_action_save = np.zeros(self.strategy_number)
         self.observed_CKC_count = np.zeros(self.CKC_number)
         self.ML_window_size = 5
         self.s_j_window_record = np.zeros((self.ML_window_size, self.strategy_number))
+        self.action_window_record = np.zeros((self.ML_window_size, self.strategy_number))
         self.S_j = np.ones(self.strategy_number)/self.strategy_number
         self.use_bundle = game.use_bundle
 
@@ -685,7 +688,7 @@ class defender_class:
                 # observe action
                 if random.random() > self.uncertainty:
                     observed_action_id = attacker.chosen_strategy
-                    # self.observed_strategy_count[attacker.chosen_strategy] += 1
+                    self.ML_action_save[attacker.chosen_strategy] += 1
                 else:
                     # if unsuccessful to observe action, randomly guess one
                     observed_action_id = random.randrange(0,len(self.observed_strategy_count))

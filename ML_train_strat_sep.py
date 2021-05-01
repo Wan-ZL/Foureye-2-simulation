@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import neighbors
 from sklearn.metrics import mean_squared_error
@@ -19,10 +20,11 @@ from sklearn import svm
 # from keras.layers import Dense, Dropout, LSTM
 
 
-def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
+def train_ML_Belief_to_Belief(schemes, window_size, n_neighbors, strategy_number):
     for schemes_index in range(len(schemes)):
         all_dataset_X = np.zeros((1, strategy_number))
         all_dataset_Y = np.zeros((1, strategy_number))
+        original_belief = np.zeros((1, strategy_number))
         path = "data/trainning_data/" + schemes[schemes_index]
         file_list = [f for f in os.listdir(path) if not f.startswith('.')]
         if len(file_list) == 0:
@@ -31,14 +33,14 @@ def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
         for file_name in file_list:
             print("data/trainning_data/" + schemes[schemes_index] + "/"+file_name)
             the_file = open("data/trainning_data/" + schemes[schemes_index] + "/"+file_name, "rb")
-            all_result_after_each_game_all_result = pickle.load(the_file)
+            all_result_def_obs_action_all_result, all_result_def_belief_all_result = pickle.load(the_file)
             the_file.close()
 
 
-            for key in all_result_after_each_game_all_result.keys():
+            for key in all_result_def_belief_all_result.keys():
                 # transfer c to S
                 # S = np.array(np.sum(all_result_after_each_game_all_result[key], axis=1))
-                S = np.array(all_result_after_each_game_all_result[key])
+                S = np.array(all_result_def_belief_all_result[key])
 
                 # padding: [0....0]*window_size to head
                 S_with_zero_head = np.concatenate((np.zeros((window_size,strategy_number)), S), axis=0)
@@ -46,11 +48,12 @@ def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
                 # concatenate to dataset
                 all_dataset_X = np.concatenate((all_dataset_X, S_with_zero_head[:-1]), axis=0)
                 all_dataset_Y = np.concatenate((all_dataset_Y, S_with_zero_head[1:]), axis=0)
+                original_belief = np.concatenate((original_belief, S_with_zero_head[:-1]), axis=0)
 
 
-        # !!!================ below estimate each strategy seperately ================
         all_dataset_X_normalized = array_normalization(all_dataset_X)
         all_dataset_Y_normalized = array_normalization(all_dataset_Y)
+        original_belief_normalized = array_normalization(original_belief)
 
         model_list = []
         total_R2_predict = 0
@@ -62,15 +65,23 @@ def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
             # strate_dataset_Y = all_dataset_Y_normalized[:, index]
             strate_dataset_X = all_dataset_X_normalized[:, index]
             strate_dataset_Y = all_dataset_Y_normalized[:, index]
+            strate_origin_belief = original_belief_normalized[:, index]
+
 
             # window_size = 5
             # strate_dataset_section_X = np.array([[[strate_dataset_X[i+j]] for i in range(window_size)] for j in range(strate_dataset_X.shape[0]-window_size)])
             strate_dataset_section_X = np.array([[strate_dataset_X[i + j] for i in range(window_size)] for j in
                                                  range(strate_dataset_X.shape[0] - window_size)])
+
+
             strate_dataset_section_Y = strate_dataset_Y[window_size:]
+            strate_origin_belief_section = strate_origin_belief[window_size:]
+
+            pd_strate_dataset_section_Y = pd.DataFrame(strate_dataset_section_Y)
+            pd_strate_origin_belief_section = pd.DataFrame(strate_origin_belief_section)
 
 
-            X_train, X_test, y_train, y_test = train_test_split(strate_dataset_section_X, strate_dataset_section_Y, test_size=0.1, random_state=1)
+            X_train, X_test, y_train, y_test = train_test_split(strate_dataset_section_X, pd_strate_dataset_section_Y, test_size=0.1, random_state=1)
 
             # KNN
             model = neighbors.KNeighborsRegressor(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
@@ -87,21 +98,12 @@ def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
             # history = model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test), verbose=0)
 
 
-            # print(f"predict {model.score(X_test, y_test)}")
-            # print(X_test)
             y_predict = model.predict(X_test)
-            # print(f"\nstrategy {index}")
-            # print("r2_score")
-            # print(f"predict {r2_score(y_test, y_predict)}")
             total_R2_predict += r2_score(y_test, y_predict)
-            # print(f"no predict {r2_score(y_test, X_test[:,-1])}")
-            total_R2_no_predict += r2_score(y_test, X_test[:,-1])
+            total_R2_no_predict += r2_score(y_test, pd_strate_origin_belief_section.iloc[y_test.index])
 
-            # print("Mean Square Error")
-            # print(f"predict {mean_squared_error(y_test, y_predict)}")
             total_MSE_predict += mean_squared_error(y_test, y_predict)
-            # print(f"no predict {mean_squared_error(y_test, X_test[:,-1])}")
-            total_MSE_no_predict += mean_squared_error(y_test, X_test[:,-1])
+            total_MSE_no_predict += mean_squared_error(y_test, pd_strate_origin_belief_section.iloc[y_test.index])
 
         print(strate_dataset_section_X.shape)
         print("\n total R2 score")
@@ -129,6 +131,83 @@ def generate_trained_ML(schemes, window_size, n_neighbors, strategy_number):
 
 
 
+
+        # save trained model
+        os.makedirs("data/trained_ML_model_list", exist_ok=True)
+        the_file = open("data/trained_ML_model_list/knn_trained_model_"+schemes[schemes_index]+".pkl", "wb+")
+        pickle.dump(model_list, the_file)
+        the_file.close()
+
+
+def train_ML_Action_to_Belief(schemes, window_size, n_neighbors, strategy_number):
+    for schemes_index in range(len(schemes)):
+        all_dataset_X = np.zeros((1, window_size, strategy_number))
+        all_dataset_Y = np.zeros((1, strategy_number))
+        original_belief = np.zeros((1, strategy_number))
+        path = "data/trainning_data/" + schemes[schemes_index]
+        file_list = [f for f in os.listdir(path) if not f.startswith('.')]
+        if len(file_list) == 0:
+            print("!! "+schemes[schemes_index]+" No File")
+            continue
+
+        # for each file
+        for file_name in file_list:
+            print("data/trainning_data/" + schemes[schemes_index] + "/"+file_name)
+            the_file = open("data/trainning_data/" + schemes[schemes_index] + "/"+file_name, "rb")
+            all_result_def_obs_action_all_result, all_result_def_belief_all_result = pickle.load(the_file)
+            the_file.close()
+
+            # concatenate data
+            # for each simulation
+            for key in all_result_def_obs_action_all_result.keys():
+                window_x = np.zeros((window_size, strategy_number))
+                # for each game
+                for record in all_result_def_obs_action_all_result[key]:
+                    # update the window
+                    window_x = np.vstack([window_x, record])
+                    window_x = np.delete(window_x, 0, 0)
+                    all_dataset_X = np.vstack((all_dataset_X, [window_x]))
+
+                belief = np.array(all_result_def_belief_all_result[key])
+
+                # Aligning data
+                all_dataset_Y = np.concatenate((all_dataset_Y, belief[1:]), axis=0)
+                original_belief = np.concatenate((original_belief, belief[:-1]), axis=0)
+                all_dataset_X = all_dataset_X[:-1]
+
+
+        model_list = []
+        total_R2_predict = 0
+        total_R2_no_predict = 0
+        total_MSE_predict = 0
+        total_MSE_no_predict = 0
+        for index in range(strategy_number):
+            strate_dataset_X = all_dataset_X[:, :, index]
+            strate_dataset_Y = all_dataset_Y[:, index]
+            strate_origin_belief = original_belief[:, index]
+            pd_strate_dataset_Y = pd.DataFrame(strate_dataset_Y)
+            pd_strate_origin_belief = pd.DataFrame(strate_origin_belief)
+
+            X_train, X_test, y_train, y_test = train_test_split(strate_dataset_X, pd_strate_dataset_Y, test_size=0.1, random_state=1)
+
+            # KNN
+            model = neighbors.KNeighborsRegressor(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
+            model_list.append(model)
+
+            y_predict = model.predict(X_test)
+
+            total_R2_predict += r2_score(y_test, y_predict)
+            total_R2_no_predict += r2_score(y_test, pd_strate_origin_belief.iloc[y_test.index])
+            total_MSE_predict += mean_squared_error(y_test, y_predict)
+            total_MSE_no_predict += mean_squared_error(y_test, pd_strate_origin_belief.iloc[y_test.index])
+
+        print(strate_dataset_X.shape)
+        print("\n total R2 score")
+        print(f"predict {total_R2_predict}")
+        print(f"no predict {total_R2_no_predict}")
+        print("total MSE")
+        print(f"predict {total_MSE_predict}")
+        print(f"predict {total_MSE_no_predict}")
 
         # save trained model
         os.makedirs("data/trained_ML_model_list", exist_ok=True)
@@ -215,7 +294,8 @@ if __name__ == '__main__':
     window_size = 5
     n_neighbors = 50
     strategy_number = 8
-    generate_trained_ML(schemes,window_size,n_neighbors, strategy_number)
+    train_ML_Belief_to_Belief(schemes,window_size,n_neighbors, strategy_number)
+    # train_ML_Action_to_Belief(schemes,window_size,n_neighbors, strategy_number)
     # display_prediction_result(schemes, strategy_number)
     print('The scikit-learn version is {}.'.format(sklearn.__version__))
 

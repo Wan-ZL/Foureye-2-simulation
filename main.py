@@ -12,19 +12,20 @@ display = False
 
 def game_start(simulation_id=1,
                DD_using=True,
-               uncertain_scheme=True,
+               uncertain_scheme_att=True,
+               uncertain_scheme_def=True,
                decision_scheme=1,
                scheme_name = "DD-IPI",
                web_data_upper_vul=7,
                Iot_upper_vul=5):
     print(
-        f"Start Simulation {simulation_id}, DD_using={DD_using}, uncertain_scheme={uncertain_scheme}"
+        f"Start Simulation {simulation_id}, DD_using={DD_using}, uncertain_scheme={[uncertain_scheme_att, uncertain_scheme_def]}"
     )
     # np.seterr(divide='ignore', invalid='ignore')  # for remove divide zero warning
 
     game_continue = True
 
-    game = game_class(simulation_id, DD_using, uncertain_scheme,decision_scheme,scheme_name,
+    game = game_class(simulation_id, DD_using, uncertain_scheme_att, uncertain_scheme_def,decision_scheme,scheme_name,
                       web_data_upper_vul, Iot_upper_vul)
     # show_all_nodes(game.graph.network)
     # return
@@ -59,13 +60,12 @@ def game_start(simulation_id=1,
                 if game.graph.network.nodes[node_id]["compromised_status"]:
                     vulnerability_set_of_compromised_node.append(
                         game.graph.network.nodes[node_id]["vulnerability"])
-            print("Sorted vulnerability of Compromised Nodes:")
-            print(sorted(vulnerability_set_of_compromised_node))
+
 
     return game
 
 
-def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme, decision_scheme, simulation_time):
+def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
     MTTSF_all_result = 0
     def_uncertainty_all_result = {}
     att_uncertainty_all_result = {}
@@ -96,14 +96,15 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme, decision_
     att_CKC_all_result = {}
     compromise_probability_all_result = {}
     number_of_inside_attacker_all_result = {}
-    all_result_after_each_game_all_result = {}
+    all_result_def_obs_action_all_result = {}
+    all_result_def_belief_all_result = {}
 
     results = []
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         for i in range(simulation_time):
             future = executor.submit(game_start, i, DD_using,
-                                     uncertain_scheme, decision_scheme, current_scheme)  # scheme change here
+                                     uncertain_scheme_att, uncertain_scheme_def, decision_scheme, current_scheme)  # scheme change here
             results.append(future)
 
         index = 0
@@ -177,7 +178,8 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme, decision_
             # inside attacker counter
             number_of_inside_attacker_all_result[index] = future.result().number_of_inside_attacker
             # data for ML model training
-            all_result_after_each_game_all_result[index] = future.result().all_result_after_each_game
+            all_result_def_obs_action_all_result[index] = future.result().all_result_def_obs_action
+            all_result_def_belief_all_result[index] = future.result().all_result_def_belief
 
 
             index += 1
@@ -362,25 +364,27 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme, decision_
     dt_string = now.strftime("%H-%M_%d-%m-%Y")
     the_file = open("data/trainning_data/" + current_scheme + "/all_result_after_each_game_" + dt_string + ".pkl",
                     "wb+")
-    pickle.dump(all_result_after_each_game_all_result, the_file)
+    pickle.dump([all_result_def_obs_action_all_result, all_result_def_belief_all_result], the_file)
     the_file.close()
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     start = time.time()
-    simulation_time = 25
+    simulation_time = 100
     print(f"number of core: {multiprocessing.cpu_count()}")
     # game_start()
     # 0 means random, 1 means HEU, 2 means ML
-    # (current_scheme, DD_using, uncertain_scheme, decision_scheme, simulation_time)
-    run_sumulation_group_1("DD-Random", True, True, 0, simulation_time)
-    run_sumulation_group_1("DD-IPI", True, True, 1, simulation_time)
-    # run_sumulation_group_1("DD-ML-IPI", True, True, 2, simulation_time)
-    run_sumulation_group_1("No-DD-IPI", False, True, 1, simulation_time)
-    run_sumulation_group_1("DD-PI", True, False, 1, simulation_time)
-    # run_sumulation_group_1("DD-ML-PI", True, False, 2, simulation_time)
-    run_sumulation_group_1("No-DD-PI", False, False, 1, simulation_time)
+    # (current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time)
+    # run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
+    # run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
+    # run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
+    # run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
+    # run_sumulation_group_1("No-DD-IPI", False, True, True, 1, simulation_time)
+    # run_sumulation_group_1("DD-PI", True, False, False, 1, simulation_time)
+    run_sumulation_group_1("DD-ML-PI", True, False, False, 2, simulation_time)
+    # run_sumulation_group_1("No-DD-PI", False, False, False, 1, simulation_time)
+    # run_sumulation_group_1("DD-IPI_ML_data", True, True, False, 1, simulation_time)
     print("Project took", time.time() - start, "seconds.")
 
     # run_sumulation_group_1("DD-Random-PI", True, False, 0, simulation_time) # removed

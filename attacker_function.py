@@ -1019,7 +1019,7 @@ def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, c
 
 
 class attacker_class:
-    def __init__(self, game, uncertain_scheme, attacker_ID):
+    def __init__(self, game, attacker_ID):
         if display:
             print("create attacker")
         self.attacker_ID = attacker_ID
@@ -1045,8 +1045,9 @@ class attacker_class:
         self.decision_scheme = game.decision_scheme
         self.chosen_strategy = 0
         self.in_honeynet = False
-        self.uncertain_scheme = uncertain_scheme
-        if game.scheme_name == 0:
+        self.uncertain_scheme = game.uncertain_scheme_att
+        print(f"game.decision_scheme {game.decision_scheme}")
+        if game.decision_scheme == 0:
             self.uncertainty = 1
         else:
             if self.uncertain_scheme:

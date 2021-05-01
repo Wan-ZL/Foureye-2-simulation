@@ -31,7 +31,8 @@ class game_class:
     def __init__(self,
                  simulation_id,
                  DD_using,
-                 uncertain_scheme,
+                 uncertain_scheme_att,
+                 uncertain_scheme_def,
                  decision_scheme,
                  scheme_name,
                  web_data_upper_vul,
@@ -50,15 +51,16 @@ class game_class:
         self.node_size_multiplier = 1  # 1 means 100 nodes, 5 means 500 nodes
         self.graph = graph_class(
             web_data_upper_vul, Iot_upper_vul, self.node_size_multiplier)
-        self.uncertain_scheme = uncertain_scheme
+        self.uncertain_scheme_att = uncertain_scheme_att
+        self.uncertain_scheme_def = uncertain_scheme_def
         self.collusion_attack_probability = 1  # TODO: add to calc_APV()
         self.attacker_ID = 0
         self.attacker_list = []
-        self.attacker_template = attacker_class(self, self.uncertain_scheme, self.attacker_ID)
+        self.attacker_template = attacker_class(self, self.attacker_ID)
         self.attacker_list.append(
-            attacker_class(self, self.uncertain_scheme, self.attacker_ID))  # for avoid index out of range eror.
+            attacker_class(self, self.attacker_ID))  # for avoid index out of range eror.
         self.attacker_number = 1
-        self.defender = defender_class(self, self.uncertain_scheme)
+        self.defender = defender_class(self)
         self.game_over = False
         self.FN = 10  # False Negative for Beta distribution >0.1
         self.TP = 90  # True Positive
@@ -94,7 +96,8 @@ class game_class:
         self.att_CKC = []
         self.compromise_probability = []
         self.number_of_inside_attacker = []
-        self.all_result_after_each_game = []
+        self.all_result_def_obs_action = []
+        self.all_result_def_belief = []
 
     def defender_round(self):
         # save data for train KNN model
@@ -105,9 +108,7 @@ class game_class:
 
         # observe
         self.defender.observe_opponent(self.attacker_list)
-        # save data for train KNN
-        # self.all_result_after_each_game.append(self.defender.observed_strategy_count.copy())
-        self.all_result_after_each_game.append(self.defender.S_j.copy())
+
 
 
 
@@ -127,22 +128,10 @@ class game_class:
                                        self.FN / (self.TP + self.FN), self.FP / (self.TN + self.FP), self.NIDS_eviction,
                                        get_P_fake_list(self.attacker_list))
 
-        #         result = self.defender.decide_CKC_posi(
-        #             self.attacker.detect_prob, self.attacker.CKC_position)
-        #         if result:
-        #             if display:
-        #                 print("defender guess CKC correct")
-        #         else:
-        #             if display:
-        #                 print("defender guess CKC wrong")
+        # save data for train KNN
+        self.all_result_def_obs_action.append(self.defender.ML_action_save.copy())
+        self.all_result_def_belief.append(self.defender.S_j.copy())
 
-        #         self.defender.choose_strategy(
-        #             self.attacker.detect_prob, self.attacker_template.strategy_number, self.attacker.strat_cost, self.attacker.impact_record)
-        #         if display:
-        #             print(f"defender choose: {self.defender.chosen_strategy+1}")
-
-        #         self.defender.execute_strategy(self.attacker.network, self.attacker.detect_prob, self.graph,
-        #                                        self.FN / (self.TP + self.FN), self.FP / (self.TN + self.FP), self.NIDS_eviction)
         self.defender.update_attribute(get_average_detect_prob(self.attacker_list))
         self.update_graph()
 
@@ -390,7 +379,7 @@ class game_class:
             # add new attacker
             self.attacker_ID += 1
             self.attacker_list.append(
-                attacker_class(self, self.uncertain_scheme, self.attacker_ID))
+                attacker_class(self, self.attacker_ID))
             # defender.reset_attribute(defender.CKC_number) # reset defender (for test)
 
     def count_number_of_evicted_attacker(self):
