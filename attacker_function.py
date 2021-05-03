@@ -1046,7 +1046,6 @@ class attacker_class:
         self.chosen_strategy = 0
         self.in_honeynet = False
         self.uncertain_scheme = game.uncertain_scheme_att
-        print(f"game.decision_scheme {game.decision_scheme}")
         if game.decision_scheme == 0:
             self.uncertainty = 1
         else:

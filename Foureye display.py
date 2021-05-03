@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from matplotlib.ticker import MaxNLocator
+import textwrap
 
 
 def display_TTSF():
@@ -17,7 +18,7 @@ def display_TTSF():
         TTSF_list = list(TTSF.values())
 
         plt.figure(figsize=(figure_width, figure_high))
-        plt.bar(range(len(TTSF_list)), TTSF_list)
+        plt.bar(range(len(TTSF_list)), TTSF_list, hatch=patterns[schemes_index])
         plt.axhline(y=np.mean(TTSF_list), color='r', linestyle=':')
 
         plt.xlabel("Simulation ID", fontsize=font_size)
@@ -47,10 +48,10 @@ def display_TTSF_in_one():
         TTSF_list = list(TTSF.values())
 
         x = np.arange(len(TTSF_list))
-        # plt.bar(range(len(TTSF_list)), TTSF_list)
+        # plt.bar(range(len(TTSF_list)), TTSF_list, hatch=patterns[schemes_index])
         # print(x + notation * width/bar_group_number)
         # print(width/bar_group_number)
-        ax.bar(x + notation * width/bar_group_number, TTSF_list, width/bar_group_number, label=schemes[schemes_index])
+        ax.bar(x + notation * width/bar_group_number, TTSF_list, width/bar_group_number, label=schemes[schemes_index], hatch=patterns[schemes_index])
         ax.axhline(y=np.mean(TTSF_list), color=coloar_order[schemes_index], linestyle='-.')
         print(schemes[schemes_index]+f" {np.mean(TTSF_list)}")
         notation += 1
@@ -90,22 +91,25 @@ def display_TTSF_in_one_bar():
         box_plot_set.append(TTSF_list)
         y_result_list.append(np.mean(TTSF_list))
         error.append(np.std(TTSF_list))
-        # plt.bar(range(len(TTSF_list)), TTSF_list)
+        # plt.bar(range(len(TTSF_list)), TTSF_list, hatch=patterns[schemes_index])
         # print(x + notation * width/bar_group_number)
         # print(width/bar_group_number)
-        # ax.bar(x + notation * width/bar_group_number, TTSF_list, width/bar_group_number, label=schemes[schemes_index])
+        # ax.bar(x + notation * width/bar_group_number, TTSF_list, width/bar_group_number, label=schemes[schemes_index], hatch=patterns[schemes_index])
         # ax.axhline(y=np.mean(TTSF_list), color=coloar_order[schemes_index], linestyle='-.')
         print(schemes[schemes_index]+f" {np.mean(TTSF_list)}")
         notation += 1
 
     # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     # plt.boxplot(box_plot_set, positions=range(len(box_plot_set)), whis=1)
-    plt.bar(range(len(y_result_list)), y_result_list, yerr=error, capsize=10, align='center')
+    for index in np.arange(len(y_result_list)):
+        print(index)
+        plt.bar(index, y_result_list[index], yerr=error[index], capsize=10, align='center', hatch=patterns[index])
     for x in range(len(y_result_list)):
         plt.text(x+0.03, y_result_list[x]+0.5 , round(y_result_list[x],2))
 
     plt.xticks(range(len(y_result_list)), schemes, fontsize=axis_size*0.45)
     plt.yticks(fontsize=axis_size)
+    plt.xlabel("Schemes", fontsize=font_size)
     plt.ylabel("MTTSF", fontsize=font_size)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
@@ -142,11 +146,10 @@ def display_TTSF_vary_AttArivalProb():
     plt.show()
 
 
-def display_HEU():
+def display_HEU_In_One():
     # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
-
-
     # AHEU
+    plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R1/att_HEU.pkl", "rb")
         att_HEU_all_result = pickle.load(the_file)
@@ -165,20 +168,21 @@ def display_HEU():
             denominator_list[:len(att_HEU_all_result[key])] += np.ones(len(att_HEU_all_result[key]))
 
         averaged_AHEU_list = summed_AHEU_list / denominator_list
+        plt.plot(range(1, len(averaged_AHEU_list)), averaged_AHEU_list[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
 
-        plt.figure(figsize=(figure_width, figure_high))
-        plt.plot(range(1, len(averaged_AHEU_list)), averaged_AHEU_list[1:])
-        plt.xlabel("# of games", fontsize=font_size)
-        plt.ylabel("Averaged AHEU", fontsize=font_size)
-        plt.xticks(fontsize=axis_size)
-        plt.yticks(fontsize=axis_size)
-        plt.tight_layout()
-        os.makedirs("Figure/" + schemes[schemes_index], exist_ok=True)
-        plt.savefig("Figure/" + schemes[schemes_index] + "/att-HEU-VV.svg", dpi=figure_dpi)
-        plt.savefig("Figure/" + schemes[schemes_index] + "/att-HEU-VV.png", dpi=figure_dpi)
-        plt.show()
+    plt.legend()
+    plt.xlabel("# of games", fontsize=font_size)
+    plt.ylabel("Averaged AHEU", fontsize=font_size)
+    plt.xticks(fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/AHEU_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/AHEU_AllInOne.png", dpi=figure_dpi)
+    plt.show()
 
     # DHEU
+    plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R1/def_HEU.pkl", "rb")
         def_HEU_all_result = pickle.load(the_file)
@@ -196,17 +200,90 @@ def display_HEU():
             denominator_list[:len(def_HEU_all_result[key])] += np.ones(len(def_HEU_all_result[key]))
 
         averaged_DHEU_list = summed_DHEU_list / denominator_list
-        plt.figure(figsize=(figure_width, figure_high))
-        plt.plot(range(1, len(averaged_DHEU_list)), averaged_DHEU_list[1:])
-        plt.xlabel("# of games", fontsize=font_size)
-        plt.ylabel("Averaged DHEU", fontsize=font_size)
-        plt.xticks(fontsize=axis_size)
-        plt.yticks(fontsize=axis_size)
-        plt.tight_layout()
-        os.makedirs("Figure/" + schemes[schemes_index], exist_ok=True)
-        plt.savefig("Figure/" + schemes[schemes_index] + "/def-HEU-VV.svg", dpi=figure_dpi)
-        plt.savefig("Figure/" + schemes[schemes_index] + "/def-HEU-VV.png", dpi=figure_dpi)
-        plt.show()
+
+        plt.plot(range(1, len(averaged_DHEU_list)), averaged_DHEU_list[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
+
+    plt.legend()
+    plt.xlabel("# of games", fontsize=font_size)
+    plt.ylabel("Averaged DHEU", fontsize=font_size)
+    plt.xticks(fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/DHEU_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/DHEU_AllInOne.png", dpi=figure_dpi)
+    plt.show()
+
+def display_average_HEU_In_One():
+    # schemes = ["DD-IPI", "DD-Random-IPI","DD-ML-IPI", "DD-PI", "DD-Random-PI","DD-ML-PI"]
+    # AHEU
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R1/att_HEU.pkl", "rb")
+        att_HEU_all_result = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for dict_index in range(len(att_HEU_all_result)):
+            if len(att_HEU_all_result[dict_index]) > max_length:
+                max_length = len(att_HEU_all_result[dict_index])
+
+        summed_AHEU_list = np.zeros(max_length)
+        denominator_list = np.zeros(max_length)
+        for key in att_HEU_all_result.keys():
+            summed_AHEU_list[:len(att_HEU_all_result[key])] += [np.mean(k) if k.size > 0 else 0 for k in
+                                                                att_HEU_all_result[key]]
+            denominator_list[:len(att_HEU_all_result[key])] += np.ones(len(att_HEU_all_result[key]))
+
+        averaged_AHEU_list = summed_AHEU_list / denominator_list
+        plt.bar(schemes_index, np.mean(averaged_AHEU_list), hatch=patterns[schemes_index], label=schemes[schemes_index])
+        plt.text(schemes_index - 0.2, np.mean(averaged_AHEU_list) + 0.05, round(np.mean(averaged_AHEU_list), 2))
+        # plt.plot(range(1, len(averaged_AHEU_list)), averaged_AHEU_list[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
+
+    # plt.legend()
+    plt.xlabel("Schemes", fontsize=font_size)
+    plt.ylabel("Average AHEU", fontsize=font_size)
+    plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in schemes], fontsize=0.6*axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/average_AHEU_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/average_AHEU_AllInOne.png", dpi=figure_dpi)
+    plt.show()
+
+    # DHEU
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R1/def_HEU.pkl", "rb")
+        def_HEU_all_result = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for dict_index in range(len(def_HEU_all_result)):
+            if len(def_HEU_all_result[dict_index]) > max_length:
+                max_length = len(def_HEU_all_result[dict_index])
+
+        summed_DHEU_list = np.zeros(max_length)
+        denominator_list = np.zeros(max_length)
+        for key in def_HEU_all_result.keys():
+            summed_DHEU_list[:len(def_HEU_all_result[key])] += [np.mean(k) for k in def_HEU_all_result[key]]
+            denominator_list[:len(def_HEU_all_result[key])] += np.ones(len(def_HEU_all_result[key]))
+
+        averaged_DHEU_list = summed_DHEU_list / denominator_list
+
+        plt.bar(schemes_index, np.mean(averaged_DHEU_list), hatch=patterns[schemes_index], label=schemes[schemes_index])
+        plt.text(schemes_index - 0.2, np.mean(averaged_DHEU_list) + 0.05, round(np.mean(averaged_DHEU_list), 2))
+
+    # plt.legend()
+    plt.xlabel("Schemes", fontsize=font_size)
+    plt.ylabel("Average DHEU", fontsize=font_size)
+    plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in schemes],fontsize=0.6*axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/average_DHEU_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/average_DHEU_AllInOne.png", dpi=figure_dpi)
+    plt.show()
 
 
 def display_strategy_count():
@@ -331,7 +408,7 @@ def display_strategy_prob_distribution():
         strategy_probability = strategy_counter/np.sum(strategy_counter)
 
         plt.figure(figsize=(figure_width, figure_high))
-        plt.bar(range(1, len(strategy_probability)+1), strategy_probability)
+        plt.bar(range(1, len(strategy_probability)+1), strategy_probability, hatch=patterns[schemes_index])
         plt.title(schemes[schemes_index], fontsize=font_size)
         plt.xlabel("Attack Strategy ID", fontsize=font_size)
         plt.ylabel("Probability", fontsize=font_size / 1.5)
@@ -359,8 +436,8 @@ def display_strategy_prob_distribution():
         strategy_probability = strategy_counter / np.sum(strategy_counter)
 
         plt.figure(figsize=(figure_width, figure_high))
-        plt.bar(range(1, len(strategy_probability) + 1), strategy_probability)
-        plt.title(schemes, fontsize=font_size)
+        plt.bar(range(1, len(strategy_probability) + 1), strategy_probability, hatch=patterns[schemes_index])
+        plt.title(schemes[schemes_index], fontsize=font_size)
         plt.xlabel("Defense Strategy ID", fontsize=font_size)
         plt.ylabel("Probability", fontsize=font_size / 1.5)
         plt.xticks(range(1, len(strategy_probability) + 1), fontsize=axis_size)
@@ -393,9 +470,9 @@ def display_strategy_prob_distribution_in_one():
         strategy_probability = strategy_counter/np.sum(strategy_counter)
 
         x = np.arange(1,len(strategy_probability)+1)
-        ax.bar(x + notation * width / bar_group_number, strategy_probability, width / bar_group_number, label=schemes[schemes_index])
+        ax.bar(x + notation * width / bar_group_number, strategy_probability, width / bar_group_number, label=schemes[schemes_index], hatch=patterns[schemes_index])
         notation += 1
-        # plt.bar(range(1, len(strategy_probability)+1), strategy_probability)
+        # plt.bar(range(1, len(strategy_probability)+1), strategy_probability, hatch=patterns[schemes_index])
     plt.legend()
     # plt.title(schemes, fontsize=font_size)
     plt.xlabel("Attack Strategy ID", fontsize=font_size)
@@ -426,9 +503,9 @@ def display_strategy_prob_distribution_in_one():
         strategy_probability = strategy_counter / np.sum(strategy_counter)
 
         ax.bar(x + notation * width / bar_group_number, strategy_probability, width / bar_group_number,
-               label=schemes[schemes_index])
+               label=schemes[schemes_index], hatch=patterns[schemes_index])
         notation += 1
-        # plt.bar(range(1, len(strategy_probability) + 1), strategy_probability)
+        # plt.bar(range(1, len(strategy_probability) + 1), strategy_probability, hatch=patterns[schemes_index])
     plt.legend()
     # plt.title(schemes, fontsize=font_size)
     plt.xlabel("Defense Strategy ID", fontsize=font_size)
@@ -559,7 +636,7 @@ def display_eviction_record():
         evict_sum[2] = max(evict_sum[2] - evict_sum[1], 0)
 
         plt.figure(figsize=(figure_width, figure_high))
-        plt.bar(range(number_of_bar), evict_sum)
+        plt.bar(range(number_of_bar), evict_sum, hatch=patterns[schemes_index])
         # plt.set_xticklabels(["1", "2", "3"])
         plt.xticks(np.arange(number_of_bar), bar_label)
         # plt.xticks(("1", "2", "3"), fontsize=font_size)
@@ -883,6 +960,94 @@ def display_uncertainty():
     plt.savefig("Figure/All-In-One/def-uncertain-AllInOne.png", dpi=figure_dpi)
     plt.show()
 
+def display_average_uncertainty():
+    # attacker uncertainty average result
+    # schemes =  ["DD-IPI", "DD-Random-IPI", "DD-PI"]#, "DD-PI", "DD-Random-PI", "DD-ML-PI"]
+
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R3/attacker_uncertainty.pkl", "rb")
+        att_uncertainty_history = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        max_index = 0
+        for key in att_uncertainty_history.keys():
+            if max_length < len(att_uncertainty_history[key]):
+                max_length = len(att_uncertainty_history[key])
+                max_index = key
+
+        # print(att_uncertainty_history[max_index])
+        # plt.plot(range(len(att_uncertainty_history[max_index])), att_uncertainty_history[max_index])
+
+        average_att_uncertainty = []
+        for index in range(max_length):
+            sum_on_index = 0
+            number_on_index = 0
+            for key in att_uncertainty_history.keys():
+                if len(att_uncertainty_history[key]) > 0:
+                    if len(att_uncertainty_history[key][0]) > 0:
+                        # sum_on_index += att_uncertainty_history[key][0]
+                        sum_on_index += np.sum(att_uncertainty_history[key][0])/len(att_uncertainty_history[key][0])
+                        att_uncertainty_history[key].pop(0)
+                        number_on_index += 1
+            average_att_uncertainty.append(sum_on_index / number_on_index)
+
+        x_values = range(len(average_att_uncertainty))
+        y_values = average_att_uncertainty
+        plt.bar(schemes_index, np.mean(y_values), hatch=patterns[schemes_index], label=schemes[schemes_index])
+
+    # plt.legend(prop={"size":legend_size}, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    plt.xlabel("Schemes", fontsize=font_size)
+    plt.ylabel("Average Att-Uncertainty", fontsize=font_size)
+    plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in schemes], fontsize=0.6*axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/att_average_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/att_average_uncertain.png", dpi=figure_dpi)
+    plt.show()
+
+    # defender uncertainty average result
+
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R3/defender_uncertainty.pkl", "rb")
+        def_uncertainty_history = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for key in def_uncertainty_history.keys():
+            if max_length < len(def_uncertainty_history[key]):
+                max_length = len(def_uncertainty_history[key])
+
+        average_def_uncertainty = []
+        for index in range(max_length):
+            sum_on_index = 0
+            number_on_index = 0
+            for key in def_uncertainty_history.keys():
+                if len(def_uncertainty_history[key]) > 0:
+                    sum_on_index += def_uncertainty_history[key][0]
+                    # sum_on_index += np.sum(def_uncertainty_history[key][0])/len(def_uncertainty_history[key][0])
+                    def_uncertainty_history[key].pop(0)
+                    number_on_index += 1
+            average_def_uncertainty.append(sum_on_index / number_on_index)
+
+        x_values = range(len(average_def_uncertainty))
+        y_values = average_def_uncertainty
+        plt.bar(schemes_index, np.mean(y_values), hatch=patterns[schemes_index], label=schemes[schemes_index])
+
+    plt.xlabel("Schemes", fontsize=font_size)
+    plt.ylabel("Average Def-Uncertainty", fontsize=font_size)
+    plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in schemes], fontsize=0.6*axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/def_average_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/def_average_uncertain.png", dpi=figure_dpi)
+    plt.show()
+
 def autolabel(rects, ax):
     """Attach a text label above each bar in *rects*, displaying its height."""
     decimal_number = 3
@@ -910,7 +1075,7 @@ def display_SysFail_in_one():
         print(SysFail_reason)
         y_values = SysFail_reason
         temp_x = np.arange(len(y_values))
-        rects = ax.bar(temp_x + shift_value[schemes_index], y_values, width, label=schemes[schemes_index])
+        rects = ax.bar(temp_x + shift_value[schemes_index], y_values, width, label=schemes[schemes_index], hatch=patterns[schemes_index])
         autolabel(rects, ax)
 
     x_values = ["All node Evicted", "SF condition 1", "SF condition 2"]
@@ -962,9 +1127,76 @@ def display_impact():
         plt.savefig("Figure/" + schemes[schemes_index] + "/attack-impact-of-stratety.png", dpi=figure_dpi)
         plt.show()
 
+def display_TPR():
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    error = []
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R4/TPR.pkl", "rb")
+        TPR_history = pickle.load(the_file)
+        the_file.close()
+
+        TPR_list = []
+        for key in TPR_history.keys():
+            TPR_list += TPR_history[0]
+        mean_TPR = np.mean(TPR_list)
+
+        print(f"{schemes[schemes_index]}: {mean_TPR}")
+        plt.bar(schemes_index, mean_TPR, label=schemes[schemes_index], yerr = np.std(TPR_list), capsize=8, hatch=patterns[schemes_index])
+
+    plt.xlabel("Schemes", fontsize=font_size)
+    plt.ylabel("TPR", fontsize=font_size)
+    plt.xticks(np.arange(len(schemes)), [textwrap.fill(label, 7) for label in schemes], fontsize=0.6*axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.ylim(0.89, 0.93)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/TPR_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/TPR_AllInOne.png", dpi=figure_dpi)
+    plt.show()
+
+def display_average_cost():
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R6/att_cost.pkl", "rb")
+        att_cost_all_result = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for key in att_cost_all_result.keys():
+            if max_length < len(att_cost_all_result[key]):
+                max_length = len(att_cost_all_result[key])
+
+        average_att_cost = []
+        for index in range(max_length):
+            sum_on_index = 0
+            number_on_index = 0
+            for key in att_cost_all_result.keys():
+                if len(att_cost_all_result[key]) > 0:
+                    sum_on_index += att_cost_all_result[key][0]
+                    att_cost_all_result[key].pop(0)
+                    number_on_index += 1
+            average_att_cost.append(sum_on_index / number_on_index)
+
+        x_values = range(len(average_att_cost))
+        y_values = average_att_cost
+
+        plt.plot(x_values[1:], y_values[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.18, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xlabel("number of games", fontsize=font_size)
+    plt.ylabel("Attacker cost", fontsize=font_size)
+    plt.xticks(fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    plt.savefig("Figure/att-cost-NG.eps", dpi=figure_dpi)
+
 if __name__ == '__main__':
     # preset values
     all_linestyle = ['-', '--', '-.', ':', '-', '--', '-.', ':']
+    patterns = ["|", "\\", "/", "+", "-", ".", "*", "x", "o", "O"]
     font_size = 25
     figure_high = 6
     figure_width = 7.5
@@ -984,7 +1216,6 @@ if __name__ == '__main__':
     # Display
     # display_TTSF()
     # display_TTSF_in_one()
-    # display_HEU()
     # display_per_Strategy_HEU()
     # display_strategy_count()
     # display_number_of_attacker()
@@ -997,10 +1228,14 @@ if __name__ == '__main__':
     # display_strategy_prob_distribution()
 
     # display_uncertainty()
+    display_average_uncertainty()
+    # display_HEU_In_One()
+    # display_average_HEU_In_One()
     # display_SysFail_in_one()
-    display_TTSF_in_one_bar()
+    # display_TTSF_in_one_bar()
     # display_inside_attacker_in_one()
     # display_strategy_prob_distribution_in_one()
+    # display_TPR()
 
     # varying parameter
     # display_TTSF_vary_AttArivalProb()

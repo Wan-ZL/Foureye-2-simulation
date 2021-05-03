@@ -96,8 +96,7 @@ class game_class:
         self.att_CKC = []
         self.compromise_probability = []
         self.number_of_inside_attacker = []
-        self.all_result_def_obs_action = []
-        self.all_result_def_belief = []
+        self.all_result_after_each_game = []
 
     def defender_round(self):
         # save data for train KNN model
@@ -108,7 +107,9 @@ class game_class:
 
         # observe
         self.defender.observe_opponent(self.attacker_list)
-
+        # save data for train KNN
+        # self.all_result_after_each_game.append(self.defender.observed_strategy_count.copy())
+        self.all_result_after_each_game.append(self.defender.S_j.copy())
 
 
 
@@ -128,10 +129,22 @@ class game_class:
                                        self.FN / (self.TP + self.FN), self.FP / (self.TN + self.FP), self.NIDS_eviction,
                                        get_P_fake_list(self.attacker_list))
 
-        # save data for train KNN
-        self.all_result_def_obs_action.append(self.defender.ML_action_save.copy())
-        self.all_result_def_belief.append(self.defender.S_j.copy())
+        #         result = self.defender.decide_CKC_posi(
+        #             self.attacker.detect_prob, self.attacker.CKC_position)
+        #         if result:
+        #             if display:
+        #                 print("defender guess CKC correct")
+        #         else:
+        #             if display:
+        #                 print("defender guess CKC wrong")
 
+        #         self.defender.choose_strategy(
+        #             self.attacker.detect_prob, self.attacker_template.strategy_number, self.attacker.strat_cost, self.attacker.impact_record)
+        #         if display:
+        #             print(f"defender choose: {self.defender.chosen_strategy+1}")
+
+        #         self.defender.execute_strategy(self.attacker.network, self.attacker.detect_prob, self.graph,
+        #                                        self.FN / (self.TP + self.FN), self.FP / (self.TN + self.FP), self.NIDS_eviction)
         self.defender.update_attribute(get_average_detect_prob(self.attacker_list))
         self.update_graph()
 

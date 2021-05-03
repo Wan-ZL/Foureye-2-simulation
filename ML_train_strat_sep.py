@@ -33,7 +33,7 @@ def train_ML_Belief_to_Belief(schemes, window_size, n_neighbors, strategy_number
         for file_name in file_list:
             print("data/trainning_data/" + schemes[schemes_index] + "/"+file_name)
             the_file = open("data/trainning_data/" + schemes[schemes_index] + "/"+file_name, "rb")
-            all_result_def_obs_action_all_result, all_result_def_belief_all_result = pickle.load(the_file)
+            all_result_def_belief_all_result = pickle.load(the_file)
             the_file.close()
 
 
