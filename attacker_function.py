@@ -811,60 +811,60 @@ def array_normalization(array):
 
 def attacker_class_choose_strategy(self, def_strategy_number,
                                    defend_cost_record, defend_impact_record):
-    if random.random() > self.uncertainty:
-        # certain level
-        S_j = np.ones(self.strategy_number) / self.strategy_number
+    # certain level
+    S_j = np.ones(self.strategy_number) / self.strategy_number
 
-        c_kj = _2darray_normalization(self.observed_strategy_count)
-        p_k = array_normalization(self.observed_CKC_count)
-        for j in range(len(S_j)):
-            temp_S = 0
-            for k in range(len(p_k)):
-                temp_S += p_k[k] * c_kj[k][j]
-            S_j[j] = temp_S
-        self.S_j = S_j
+    c_kj = _2darray_normalization(self.observed_strategy_count)
+    p_k = array_normalization(self.observed_CKC_count)
+    for j in range(len(S_j)):
+        temp_S = 0
+        for k in range(len(p_k)):
+            temp_S += p_k[k] * c_kj[k][j]
+        S_j[j] = temp_S
+    self.S_j = S_j
 
-        # eq. 17
-        utility = np.zeros((self.strategy_number, def_strategy_number))
-        for i in range(self.strategy_number):
-            for j in range(def_strategy_number):
-                utility[i,
-                        j] = (self.impact_record[i] +
-                              defend_cost_record[j] / 3) - (
-                                     self.strat_cost[i] / 3 + defend_impact_record[j])
+    # eq. 17
+    utility = np.zeros((self.strategy_number, def_strategy_number))
+    for i in range(self.strategy_number):
+        for j in range(def_strategy_number):
+            utility[i,
+                    j] = (self.impact_record[i] +
+                          defend_cost_record[j] / 3) - (
+                                 self.strat_cost[i] / 3 + defend_impact_record[j])
 
-        # normalization range
-        a = 1
-        b = 9
+    # normalization range
+    a = 1
+    b = 9
 
-        # eq. 8
-        EU_C = np.zeros(self.strategy_number)
-        for i in range(self.strategy_number):
-            for j in range(def_strategy_number):
-                EU_C[i] += S_j[j] * utility[i, j]
+    # eq. 8
+    EU_C = np.zeros(self.strategy_number)
+    for i in range(self.strategy_number):
+        for j in range(def_strategy_number):
+            EU_C[i] += S_j[j] * utility[i, j]
 
 
-        # eq. 9
-        EU_CMS = np.zeros(self.strategy_number)
-        for i in range(self.strategy_number):
-            w = np.argmin(utility[i])  # min utility index
-            EU_CMS[i] = self.strategy_number * S_j[w] * utility[i][w]
+    # eq. 9
+    EU_CMS = np.zeros(self.strategy_number)
+    for i in range(self.strategy_number):
+        w = np.argmin(utility[i])  # min utility index
+        EU_CMS[i] = self.strategy_number * S_j[w] * utility[i][w]
 
-        HEU = EU_C
+    HEU = EU_C
 
-        # Min-Max Normalization
-        if (max(HEU) - min(HEU)) != 0:
-            HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
-        else:
-            HEU = np.ones(self.strategy_number) * a
-        self.HEU = HEU  # uncertainty case doesn't consider as real HEU
-
-        # eq. 23
-        AHEU = np.zeros(self.strategy_number)
-        for index in range(self.strategy_number):
-            AHEU[index] = HEU[index] * self.strat_option[
-                self.CKC_position, index]  # for Table 4
+    # Min-Max Normalization
+    if (max(HEU) - min(HEU)) != 0:
+        HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
     else:
+        HEU = np.ones(self.strategy_number) * a
+    self.HEU = HEU  # uncertainty case doesn't consider as real HEU
+
+    # eq. 23
+    AHEU = np.zeros(self.strategy_number)
+    for index in range(self.strategy_number):
+        AHEU[index] = HEU[index] * self.strat_option[
+            self.CKC_position, index]  # for Table 4
+
+    if random.random() < self.uncertainty:
         # uncertain level
         # Whole Random:
         AHEU = np.ones(self.strategy_number)

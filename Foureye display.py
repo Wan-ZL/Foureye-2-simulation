@@ -104,10 +104,10 @@ def display_TTSF_in_one_bar():
     for index in np.arange(len(y_result_list)):
         print(index)
         plt.bar(index, y_result_list[index], yerr=error[index], capsize=10, align='center', hatch=patterns[index])
-    for x in range(len(y_result_list)):
-        plt.text(x+0.03, y_result_list[x]+0.5 , round(y_result_list[x],2))
+    # for x in range(len(y_result_list)):
+        # plt.text(x+0.03, y_result_list[x]+0.5 , round(y_result_list[x],2))
 
-    plt.xticks(range(len(y_result_list)), schemes, fontsize=axis_size*0.45)
+    plt.xticks(np.arange(len(schemes)), [textwrap.fill(label, 7) for label in schemes], fontsize=axis_size*0.6)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Schemes", fontsize=font_size)
     plt.ylabel("MTTSF", fontsize=font_size)
@@ -314,7 +314,7 @@ def display_strategy_count():
         for strategy_id in range(strategy_number):
             plt.plot(range(max_length), attack_strategy_counter[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
-        plt.xlabel("# of games", fontsize=font_size)
+        plt.xlabel("number of games ("+schemes[schemes_index]+")", fontsize=font_size)
         plt.ylabel("Number of Att strategy used", fontsize=font_size / 1.5)
         plt.xticks(fontsize=axis_size)
         plt.yticks(fontsize=axis_size)
@@ -331,7 +331,7 @@ def display_strategy_count():
             plt.plot(range(max_length), percentage_style_attack_strategy_counter[strategy_id],
                      label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
-        plt.xlabel("# of games", fontsize=font_size)
+        plt.xlabel("number of games ("+schemes[schemes_index]+")", fontsize=font_size)
         plt.ylabel("Percentage of Att strategy used", fontsize=font_size / 1.5)
         plt.xticks(fontsize=axis_size)
         plt.yticks(fontsize=axis_size)
@@ -364,7 +364,7 @@ def display_strategy_count():
         for strategy_id in range(strategy_number):
             plt.plot(range(max_length), defend_strategy_counter[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
-        plt.xlabel("# of games", fontsize=font_size)
+        plt.xlabel("number of games ("+schemes[schemes_index]+")", fontsize=font_size)
         plt.ylabel("Number of Def strategy used", fontsize=font_size / 1.5)
         plt.xticks(fontsize=axis_size)
         plt.yticks(fontsize=axis_size)
@@ -381,7 +381,7 @@ def display_strategy_count():
             plt.plot(range(max_length), percentage_style_defend_strategy_counter[strategy_id],
                      label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
-        plt.xlabel("# of games", fontsize=font_size)
+        plt.xlabel("number of games ("+schemes[schemes_index]+")", fontsize=font_size)
         plt.ylabel("Percentage of Def strategy used", fontsize=font_size / 1.5)
         plt.xticks(fontsize=axis_size)
         plt.yticks(fontsize=axis_size)
@@ -909,7 +909,7 @@ def display_uncertainty():
                   loc='lower left', fontsize='large',mode="expand")
     # plt.legend(prop={"size":legend_size}, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     plt.xlabel("number of games", fontsize=font_size)
-    plt.ylabel("Averaged Att-Uncertainty", fontsize=font_size)
+    plt.ylabel("Att-Uncertainty", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
@@ -950,7 +950,7 @@ def display_uncertainty():
     plt.legend(prop={"size":legend_size}, ncol=2, bbox_to_anchor=(0, 1, 1, 0),
                   loc='lower left', fontsize='large',mode="expand")
     plt.xlabel("number of games", fontsize=font_size)
-    plt.ylabel("Averaged Def-Uncertainty", fontsize=font_size)
+    plt.ylabel("Def-Uncertainty", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
@@ -1127,7 +1127,7 @@ def display_impact():
         plt.savefig("Figure/" + schemes[schemes_index] + "/attack-impact-of-stratety.png", dpi=figure_dpi)
         plt.show()
 
-def display_TPR():
+def display_average_TPR():
     plt.figure(figsize=(figure_width, figure_high + 0.75))
     error = []
     for schemes_index in range(len(schemes)):
@@ -1150,11 +1150,106 @@ def display_TPR():
     plt.ylim(0.89, 0.93)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/average_TPR_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/average_TPR_AllInOne.png", dpi=figure_dpi)
+    plt.show()
+
+def display_TPR():
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R4/TPR.pkl", "rb")
+        TPR_history = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for key in TPR_history.keys():
+            if max_length < len(TPR_history[key]):
+                max_length = len(TPR_history[key])
+
+        average_TPR = []
+        for index in range(max_length):
+            sum_on_index = 0
+            number_on_index = 0
+            for key in TPR_history.keys():
+                if len(TPR_history[key]) > 0:
+                    sum_on_index += TPR_history[key][0]
+                    TPR_history[key].pop(0)
+                    number_on_index += 1
+            average_TPR.append(sum_on_index / number_on_index)
+
+        x_values = range(len(average_TPR))
+        y_values = average_TPR
+
+        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=schemes[schemes_index],
+                 linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=50, markersize=marker_size)
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.25, 1.01, 1.25, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xlabel("number of games", fontsize=font_size)
+    plt.ylabel("TPR", fontsize=font_size)
+    plt.xticks(fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/TPR_AllInOne.svg", dpi=figure_dpi)
     plt.savefig("Figure/All-In-One/TPR_AllInOne.png", dpi=figure_dpi)
     plt.show()
 
 def display_average_cost():
+    # attacker cost
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R6/att_cost.pkl", "rb")
+        att_cost_all_result = pickle.load(the_file)
+        the_file.close()
+
+        cost_list = []
+        for key in att_cost_all_result.keys():
+            for att_cost in att_cost_all_result[key]:
+                cost_list = np.concatenate((cost_list, att_cost))
+
+        plt.bar(schemes_index, np.mean(cost_list), yerr=np.std(cost_list), capsize=10, hatch=patterns[schemes_index])
+        plt.text(schemes_index + 0.03, np.mean(cost_list) + 0.01, round(np.mean(cost_list), 2))
+
+    plt.xlabel("Schemes", fontsize=font_size)
+    plt.ylabel("Attack cost", fontsize=font_size)
+    plt.xticks(np.arange(len(schemes)), [textwrap.fill(label, 7) for label in schemes],fontsize=0.6*axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/att_average_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/att_average_cost.png", dpi=figure_dpi)
+    plt.show()
+
+    # defender cost
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R6/def_cost.pkl", "rb")
+        def_cost_all_result = pickle.load(the_file)
+        the_file.close()
+
+        cost_list = []
+        for key in def_cost_all_result.keys():
+            for def_cost in def_cost_all_result[key]:
+                cost_list = np.concatenate((cost_list, def_cost))
+
+        plt.bar(schemes_index, np.mean(cost_list), yerr=np.std(cost_list), capsize=10, hatch=patterns[schemes_index])
+        plt.text(schemes_index + 0.03, np.mean(cost_list) + 0.01, round(np.mean(cost_list), 2))
+
+    plt.xlabel("Schemes", fontsize=font_size)
+    plt.ylabel("Defence cost", fontsize=font_size)
+    plt.xticks(np.arange(len(schemes)), [textwrap.fill(label, 7) for label in schemes], fontsize=0.6 * axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/def_average_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/def_average_cost.png", dpi=figure_dpi)
+    plt.show()
+
+def display_cost():
+    # attacker
     plt.figure(figsize=(figure_width, figure_high + 0.75))
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R6/att_cost.pkl", "rb")
@@ -1172,7 +1267,7 @@ def display_average_cost():
             number_on_index = 0
             for key in att_cost_all_result.keys():
                 if len(att_cost_all_result[key]) > 0:
-                    sum_on_index += att_cost_all_result[key][0]
+                    sum_on_index += np.mean(att_cost_all_result[key][0])
                     att_cost_all_result[key].pop(0)
                     number_on_index += 1
             average_att_cost.append(sum_on_index / number_on_index)
@@ -1187,11 +1282,740 @@ def display_average_cost():
                loc='lower left',
                mode="expand")
     plt.xlabel("number of games", fontsize=font_size)
-    plt.ylabel("Attacker cost", fontsize=font_size)
+    plt.ylabel("Attack cost", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
-    plt.savefig("Figure/att-cost-NG.eps", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/att_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/att_cost.png", dpi=figure_dpi)
+    plt.show()
+
+    # defender
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R6/def_cost.pkl", "rb")
+        def_cost_all_result = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for key in def_cost_all_result.keys():
+            if max_length < len(def_cost_all_result[key]):
+                max_length = len(def_cost_all_result[key])
+
+        average_def_cost = []
+        for index in range(max_length):
+            sum_on_index = 0
+            number_on_index = 0
+            for key in def_cost_all_result.keys():
+                if len(def_cost_all_result[key]) > 0:
+                    sum_on_index += np.mean(def_cost_all_result[key][0])
+                    def_cost_all_result[key].pop(0)
+                    number_on_index += 1
+            average_def_cost.append(sum_on_index / number_on_index)
+
+        x_values = range(len(average_def_cost))
+        y_values = average_def_cost
+
+        plt.plot(x_values[1:], y_values[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.18, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xlabel("number of games", fontsize=font_size)
+    plt.ylabel("Defence cost", fontsize=font_size)
+    plt.xticks(fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/def_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/def_cost.png", dpi=figure_dpi)
+    plt.show()
+
+
+def display_MTTSF_varying():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/MTTSF.pkl", "rb")
+        MTTSF = pickle.load(the_file)
+
+        y_axis = np.zeros(len(MTTSF))
+        error = np.zeros(len(MTTSF))
+        for varying_key in MTTSF.keys():
+            y_axis[varying_key] = np.mean(list(MTTSF[varying_key].values()))
+            error[varying_key] = np.std(list(MTTSF[varying_key].values()))
+
+        plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        # plt.errorbar(list(MTTSF.keys()), y_axis, yerr=error, capsize=10)
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(MTTSF.keys()), varying_range[0],fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("MTTSF", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/MTTSF.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/MTTSF.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/MTTSF.png", dpi=figure_dpi)
+    plt.show()
+
+def display_cost_varying():
+    # attacker cost
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/att_cost.pkl", "rb")
+        att_cost = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(att_cost))
+        error = np.zeros(len(att_cost))
+        for varying_key in att_cost.keys():
+            cost_list = []
+            att_cost_sum = 0
+            att_cost_counter = 0
+            for sim_key in att_cost[varying_key].keys():
+                for cost_per_game in att_cost[varying_key][sim_key]:
+                    att_cost_sum += sum(cost_per_game)
+                    cost_list += list(cost_per_game)
+                    att_cost_counter += len(cost_per_game)
+            y_axis[varying_key] = att_cost_sum/att_cost_counter
+            error[varying_key] = np.std(cost_list)
+
+        plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(att_cost.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("Attack Cost", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/att_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/att_cost.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/att_cost.png", dpi=figure_dpi)
+    plt.show()
+
+
+    # defender cost
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/def_cost.pkl", "rb")
+        def_cost = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(def_cost))
+        error = np.zeros(len(att_cost))
+        for varying_key in def_cost.keys():
+            cost_list = []
+            def_cost_sum = 0
+            def_cost_counter = 0
+            for sim_key in def_cost[varying_key].keys():
+                for cost_per_game in def_cost[varying_key][sim_key]:
+                    def_cost_sum += sum(cost_per_game)
+                    cost_list += list(cost_per_game)
+                    def_cost_counter += len(cost_per_game)
+            y_axis[varying_key] = def_cost_sum/def_cost_counter
+            error[varying_key] = np.std(cost_list)
+
+        plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(def_cost.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("Defense Cost", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/def_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/def_cost.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/def_cost.png", dpi=figure_dpi)
+    plt.show()
+
+def display_HEU_varying():
+    # AHEU
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/att_HEU.pkl", "rb")
+        att_HEU = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(att_HEU))
+        for varying_key in att_HEU.keys():
+            att_HEU_sum = 0
+            att_HEU_counter = 0
+            for sim_key in att_HEU[varying_key].keys():
+                for HEU_per_game in att_HEU[varying_key][sim_key]:
+                    att_HEU_sum += sum(HEU_per_game)
+                    att_HEU_counter += len(HEU_per_game)
+            y_axis[varying_key] = att_HEU_sum / att_HEU_counter
+
+        plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(att_HEU.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("AHEU", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/AHEU.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/AHEU.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/AHEU.png", dpi=figure_dpi)
+    plt.show()
+
+    # DHEU
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/def_HEU.pkl", "rb")
+        def_HEU = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(def_HEU))
+        for varying_key in def_HEU.keys():
+            def_HEU_sum = 0
+            def_HEU_counter = 0
+            for sim_key in def_HEU[varying_key].keys():
+                for HEU_per_game in def_HEU[varying_key][sim_key]:
+                    def_HEU_sum += sum(HEU_per_game)
+                    def_HEU_counter += len(HEU_per_game)
+            y_axis[varying_key] = def_HEU_sum / def_HEU_counter
+
+        plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(def_HEU.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("DHEU", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/DHEU.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/DHEU.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/DHEU.png", dpi=figure_dpi)
+    plt.show()
+
+def display_uncertainty_varying():
+    # attacker uncertainty
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/att_uncertainty.pkl", "rb")
+        att_uncertain = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(att_uncertain))
+        for varying_key in att_uncertain.keys():
+            att_uncertain_sum = 0
+            att_uncertain_counter = 0
+            for sim_key in att_uncertain[varying_key].keys():
+                for uncertain_per_game in att_uncertain[varying_key][sim_key]:
+                    att_uncertain_sum += sum(uncertain_per_game)
+                    att_uncertain_counter += len(uncertain_per_game)
+            y_axis[varying_key] = att_uncertain_sum / att_uncertain_counter
+
+        plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(att_uncertain.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("Attacker Uncertainty", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/att_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/att_uncertain.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/att_uncertain.png", dpi=figure_dpi)
+    plt.show()
+
+    # Defender Uncertainty
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/def_uncertainty.pkl", "rb")
+        def_uncertain = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(def_uncertain))
+        for varying_key in def_uncertain.keys():
+            def_uncertain_sum = 0
+            def_uncertain_counter = 0
+            for sim_key in def_uncertain[varying_key].keys():
+                def_uncertain_sum += sum(def_uncertain[varying_key][sim_key])
+                def_uncertain_counter += len(def_uncertain[varying_key][sim_key])
+            y_axis[varying_key] = def_uncertain_sum / def_uncertain_counter
+
+        plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(def_uncertain.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("Defender Uncertainty", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/def_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/def_uncertain.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/def_uncertain.png", dpi=figure_dpi)
+    plt.show()
+
+def display_FPR_varying():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/FPR.pkl", "rb")
+        FPR = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(FPR))
+        for varying_key in FPR.keys():
+            FPR_sum = 0
+            FPR_counter = 0
+            for sim_key in FPR[varying_key].keys():
+                FPR_sum += sum(FPR[varying_key][sim_key])
+                FPR_counter += len(FPR[varying_key][sim_key])
+            y_axis[varying_key] = FPR_sum / FPR_counter
+
+        plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(FPR.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("FPR", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/FPR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/FPR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/FPR.png", dpi=figure_dpi)
+    plt.show()
+
+def display_TPR_varying():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying/TPR.pkl", "rb")
+        TPR = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(TPR))
+        for varying_key in TPR.keys():
+            TPR_sum = 0
+            TPR_counter = 0
+            for sim_key in TPR[varying_key].keys():
+                TPR_sum += sum(TPR[varying_key][sim_key])
+                TPR_counter += len(TPR[varying_key][sim_key])
+            y_axis[varying_key] = TPR_sum / TPR_counter
+
+        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(TPR.keys()), varying_range[0], fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
+    plt.ylabel("TPR", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying/TPR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/TPR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying/TPR.png", dpi=figure_dpi)
+    plt.show()
+
+
+def display_MTTSF_varying_AAP():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/MTTSF.pkl", "rb")
+        MTTSF = pickle.load(the_file)
+
+        y_axis = np.zeros(len(MTTSF))
+        error = np.zeros(len(MTTSF))
+        for varying_key in MTTSF.keys():
+            y_axis[varying_key] = np.mean(list(MTTSF[varying_key].values()))
+            error[varying_key] = np.std(list(MTTSF[varying_key].values()))
+
+        plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        # plt.errorbar(list(MTTSF.keys()), y_axis, yerr=error, capsize=10)
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+
+    plt.xticks(list(MTTSF.keys()), varying_range,fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("MTTSF", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/MTTSF.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/MTTSF.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/MTTSF.png", dpi=figure_dpi)
+    plt.show()
+
+def display_cost_varying_AAP():
+    # attacker cost
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/att_cost.pkl", "rb")
+        att_cost = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(att_cost))
+        error = np.zeros(len(att_cost))
+        for varying_key in att_cost.keys():
+            cost_list = []
+            att_cost_sum = 0
+            att_cost_counter = 0
+            for sim_key in att_cost[varying_key].keys():
+                for cost_per_game in att_cost[varying_key][sim_key]:
+                    att_cost_sum += sum(cost_per_game)
+                    cost_list += list(cost_per_game)
+                    att_cost_counter += len(cost_per_game)
+            y_axis[varying_key] = att_cost_sum/att_cost_counter
+            error[varying_key] = np.std(cost_list)
+
+        plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(att_cost.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("Attack Cost", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/att_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/att_cost.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/att_cost.png", dpi=figure_dpi)
+    plt.show()
+
+
+    # defender cost
+    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/def_cost.pkl", "rb")
+        def_cost = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(def_cost))
+        error = np.zeros(len(att_cost))
+        for varying_key in def_cost.keys():
+            cost_list = []
+            def_cost_sum = 0
+            def_cost_counter = 0
+            for sim_key in def_cost[varying_key].keys():
+                for cost_per_game in def_cost[varying_key][sim_key]:
+                    def_cost_sum += sum(cost_per_game)
+                    cost_list += list(cost_per_game)
+                    def_cost_counter += len(cost_per_game)
+            y_axis[varying_key] = def_cost_sum/def_cost_counter
+            error[varying_key] = np.std(cost_list)
+
+        plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(def_cost.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("Defense Cost", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/def_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/def_cost.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/def_cost.png", dpi=figure_dpi)
+    plt.show()
+
+def display_HEU_varying_AAP():
+    # AHEU
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/att_HEU.pkl", "rb")
+        att_HEU = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(att_HEU))
+        for varying_key in att_HEU.keys():
+            att_HEU_sum = 0
+            att_HEU_counter = 0
+            for sim_key in att_HEU[varying_key].keys():
+                for HEU_per_game in att_HEU[varying_key][sim_key]:
+                    att_HEU_sum += sum(HEU_per_game)
+                    att_HEU_counter += len(HEU_per_game)
+            y_axis[varying_key] = att_HEU_sum / att_HEU_counter
+
+        plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(att_HEU.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("AHEU", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/AHEU.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/AHEU.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/AHEU.png", dpi=figure_dpi)
+    plt.show()
+
+    # DHEU
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/def_HEU.pkl", "rb")
+        def_HEU = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(def_HEU))
+        for varying_key in def_HEU.keys():
+            def_HEU_sum = 0
+            def_HEU_counter = 0
+            for sim_key in def_HEU[varying_key].keys():
+                for HEU_per_game in def_HEU[varying_key][sim_key]:
+                    def_HEU_sum += sum(HEU_per_game)
+                    def_HEU_counter += len(HEU_per_game)
+            y_axis[varying_key] = def_HEU_sum / def_HEU_counter
+
+        plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(def_HEU.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("DHEU", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/DHEU.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/DHEU.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/DHEU.png", dpi=figure_dpi)
+    plt.show()
+
+def display_uncertainty_varying_AAP():
+    # attacker uncertainty
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/att_uncertainty.pkl", "rb")
+        att_uncertain = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(att_uncertain))
+        for varying_key in att_uncertain.keys():
+            att_uncertain_sum = 0
+            att_uncertain_counter = 0
+            for sim_key in att_uncertain[varying_key].keys():
+                for uncertain_per_game in att_uncertain[varying_key][sim_key]:
+                    att_uncertain_sum += sum(uncertain_per_game)
+                    att_uncertain_counter += len(uncertain_per_game)
+            y_axis[varying_key] = att_uncertain_sum / att_uncertain_counter
+
+        plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(att_uncertain.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("Attacker Uncertainty", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/att_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/att_uncertain.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/att_uncertain.png", dpi=figure_dpi)
+    plt.show()
+
+    # Defender Uncertainty
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/def_uncertainty.pkl", "rb")
+        def_uncertain = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(def_uncertain))
+        for varying_key in def_uncertain.keys():
+            def_uncertain_sum = 0
+            def_uncertain_counter = 0
+            for sim_key in def_uncertain[varying_key].keys():
+                def_uncertain_sum += sum(def_uncertain[varying_key][sim_key])
+                def_uncertain_counter += len(def_uncertain[varying_key][sim_key])
+            y_axis[varying_key] = def_uncertain_sum / def_uncertain_counter
+
+        plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(def_uncertain.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("Defender Uncertainty", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/def_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/def_uncertain.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/def_uncertain.png", dpi=figure_dpi)
+    plt.show()
+
+def display_FPR_varying_AAP():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/FPR.pkl", "rb")
+        FPR = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(FPR))
+        for varying_key in FPR.keys():
+            FPR_sum = 0
+            FPR_counter = 0
+            for sim_key in FPR[varying_key].keys():
+                FPR_sum += sum(FPR[varying_key][sim_key])
+                FPR_counter += len(FPR[varying_key][sim_key])
+            y_axis[varying_key] = FPR_sum / FPR_counter
+
+        plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(FPR.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("FPR", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/FPR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/FPR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/FPR.png", dpi=figure_dpi)
+    plt.show()
+
+def display_TPR_varying_AAP():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/TPR.pkl", "rb")
+        TPR = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(TPR))
+        for varying_key in TPR.keys():
+            TPR_sum = 0
+            TPR_counter = 0
+            for sim_key in TPR[varying_key].keys():
+                TPR_sum += sum(TPR[varying_key][sim_key])
+                TPR_counter += len(TPR[varying_key][sim_key])
+            y_axis[varying_key] = TPR_sum / TPR_counter
+
+        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    plt.legend(prop={"size": legend_size},
+               ncol=4,
+               bbox_to_anchor=(-0.17, 1, 1.2, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xticks(list(TPR.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("TPR", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/TPR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/TPR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/TPR.png", dpi=figure_dpi)
+    plt.show()
+
 
 if __name__ == '__main__':
     # preset values
@@ -1208,7 +2032,7 @@ if __name__ == '__main__':
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
     schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
-    # schemes = ["DD-IPI", "DD-PI", "DD-Random-IPI"]
+    # schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
 
 
 
@@ -1226,16 +2050,33 @@ if __name__ == '__main__':
     # display_def_impact()
     # display_impact()
     # display_strategy_prob_distribution()
-
+    #
     # display_uncertainty()
-    display_average_uncertainty()
+    # display_average_uncertainty()
     # display_HEU_In_One()
     # display_average_HEU_In_One()
     # display_SysFail_in_one()
-    # display_TTSF_in_one_bar()
+    display_TTSF_in_one_bar()
     # display_inside_attacker_in_one()
     # display_strategy_prob_distribution_in_one()
+    # display_average_TPR()
     # display_TPR()
+    # display_average_cost()
+    # display_cost()
+
+    # display_MTTSF_varying()
+    # display_cost_varying()
+    # display_HEU_varying()
+    # display_uncertainty_varying()
+    # display_FPR_varying()
+    # display_TPR_varying()
+
+    # display_MTTSF_varying_AAP()
+    # display_cost_varying_AAP()
+    # display_HEU_varying_AAP()
+    # display_uncertainty_varying_AAP()
+    # display_FPR_varying_AAP()
+    # display_TPR_varying_AAP()
 
     # varying parameter
     # display_TTSF_vary_AttArivalProb()

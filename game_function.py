@@ -36,15 +36,19 @@ class game_class:
                  decision_scheme,
                  scheme_name,
                  web_data_upper_vul,
-                 Iot_upper_vul):
+                 Iot_upper_vul,
+                 att_arr_prob,
+                 vary_name, vary_value):
         print(f"Sim {simulation_id} creating game")
-        self.lifetime = 1
+        self.lifetime = 0
         self.CKC_number = 6
         self.strategy_number = 8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
         self.use_bundle = True      # Note: False means defender only use one strategy each game
         self.enable_IRS_recheck = False     # True means enable IRS rechecking
         self.enable_IRS_recover = False     # True means enable IRS recovery
-        self.new_attacker_probability = 0.1 # 1  # 0 means only one attacker in game.
+        self.new_attacker_probability = att_arr_prob # 1  # 0 means only one attacker in game.
+        self.vary_name = vary_name  # vary_name and vary_value are used to locate ML model
+        self.vary_value = vary_value
         self.DD_using = DD_using
         self.decision_scheme = decision_scheme
         self.scheme_name = scheme_name
@@ -122,7 +126,7 @@ class game_class:
         # select strategy bundle
         self.defender.choose_bundle(
             self.attacker_template.strategy_number, self.attacker_template.strat_cost,
-            get_averaged_impact(self.attacker_list, self.attacker_template))
+            get_averaged_impact(self.attacker_list, self.attacker_template), self.vary_name, self.vary_value)
 
         self.defender.execute_strategy(get_network_list(self.attacker_list), get_detect_prob_list(self.attacker_list),
                                        self.graph,
