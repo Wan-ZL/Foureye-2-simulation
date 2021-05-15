@@ -877,7 +877,7 @@ def attacker_class_choose_strategy(self, def_strategy_number,
         #     AHEU = np.ones(self.strategy_number)
 
     # Selection Scheme
-    if self.decision_scheme == 0:  # for random selection scheme
+    if self.decision_scheme == 0 or self.decision_scheme == 3:  # for random selection scheme
         self.chosen_strategy = random.choices(range(self.strategy_number))[0]
     elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
         if sum(AHEU) == 0:  # fix python 3.5 error

@@ -35,7 +35,7 @@ def def_strategy_cost(strategy_number):
     defend_cost[6] = 2
     defend_cost[7] = 2
     if strategy_number-1 == 8: defend_cost[8] = 0
-    # defend_cost = np.ones(strategy_number)          # test
+    defend_cost = np.ones(strategy_number)          # test
     return defend_cost
 
 
@@ -564,9 +564,9 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
 
 
     # Selection Scheme
-    # if self.decision_scheme == 0:  # for random selection scheme
-    #     self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
-    if self.decision_scheme == 0 or self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
+    if self.decision_scheme == 0 or self.decision_scheme == 3:  # for random selection scheme
+        self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
+    elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
         if sum(bundle_HEU) == 0:  # fix python 3.5 error
             self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
         else:
@@ -641,15 +641,15 @@ class defender_class:
         print('The scikit-learn version is {}.'.format(sklearn.__version__))
         self.network = copy.deepcopy(game.graph.network)  # defender's view
         self.strategy_number = game.strategy_number  # strategy size
+        self.CKC_number = game.CKC_number
+        self.CKC_list = []
         self.key_time = 1
         self.monit_time = 1
         self.dec = 0
         self.cost_limit = 3 # was 5
         self.strat_cost = def_strategy_cost(self.strategy_number)
         self.impact_record = np.ones(self.strategy_number)
-        #         self.CKC_position = 6  # 6 means full game
-        self.CKC_list = []
-        self.CKC_number = game.CKC_number
+
         #         self.strat_option = create_bundle(CKC_list, self.strategy_number, game.DD_using, self.strat_cost, self.cost_limit) # Table 4
         #         self.optional_bundle_list = defender_class_create_bundle(game.DD_using)
         self.optional_bundle_list = []  # spare bundles
@@ -682,6 +682,9 @@ class defender_class:
         self.s_j_window_record = np.zeros((self.ML_window_size, self.strategy_number))
         self.S_j = np.ones(self.strategy_number)/self.strategy_number
         self.use_bundle = game.use_bundle
+        self.att_previous_strat = np.zeros(self.strategy_number)
+        self.att_previous_CKC = np.zeros(self.CKC_number)
+
 
     create_bundle = defender_class_create_bundle
     choose_bundle = defender_class_choose_bundle
@@ -696,7 +699,7 @@ class defender_class:
                 # observe action
                 if random.random() > self.uncertainty:
                     observed_action_id = attacker.chosen_strategy
-                    # self.observed_strategy_count[attacker.chosen_strategy] += 1
+                    self.att_previous_strat[attacker.chosen_strategy] += 1
                 else:
                     # if unsuccessful to observe action, randomly guess one
                     observed_action_id = random.randrange(0,len(self.observed_strategy_count))
@@ -704,6 +707,7 @@ class defender_class:
                 # observe CKC
                 if random.random() > self.uncertainty:
                     observed_CKC_id = attacker.CKC_position
+                    self.att_previous_CKC[attacker.CKC_position] += 1
                 else:
                     # if unsuccessful to observe CKC position, randomly guess one
                     observed_CKC_id = random.randrange(0,len(self.observed_CKC_count))

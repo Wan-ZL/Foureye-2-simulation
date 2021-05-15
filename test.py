@@ -1,3 +1,4 @@
 import numpy as np
 
-print(np.array(range(1, 5 + 1)) * 2)
+a = np.arange(10)
+print(a[0:8])

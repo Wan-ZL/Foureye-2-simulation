@@ -285,6 +285,128 @@ def display_prediction_result(schemes, strategy_number):
         plt.legend()
         plt.show()
 
+def train_ML_predict_action(schemes, x_length, n_neighbors, strategy_number):
+    for schemes_index in range(len(schemes)):
+        # all_dataset_X = np.zeros((1, x_length))
+        # all_dataset_Y = np.zeros((1, 1))
+        all_dataset_X = []
+        all_dataset_Y = []
+        original_belief = np.zeros((1, strategy_number))
+        path = "data/trainning_data/" + schemes[schemes_index]
+        file_list = [f for f in os.listdir(path) if not f.startswith('.')]
+        if len(file_list) == 0:
+            print("!! "+schemes[schemes_index]+" No File")
+            continue
+        for file_name in file_list:
+            print("data/trainning_data/" + schemes[schemes_index] + "/"+file_name)
+            the_file = open("data/trainning_data/" + schemes[schemes_index] + "/"+file_name, "rb")
+            [ML_x_data_all_result, ML_y_data_all_result] = pickle.load(the_file)
+            the_file.close()
+
+
+            for key in ML_x_data_all_result.keys():
+                for dataset_x in ML_x_data_all_result[key]:
+                    all_dataset_X.append(dataset_x)
+                for dataset_y in ML_y_data_all_result[key]:
+                    all_dataset_Y.append(dataset_y)
+
+                # all_dataset_X.append(ML_x_data_all_result[key])
+                # all_dataset_Y.append(ML_y_data_all_result[key])
+                # all_dataset_X = np.concatenate((all_dataset_X, ML_x_data_all_result[key]), axis=0)
+                # all_dataset_Y = np.concatenate((all_dataset_Y, ML_y_data_all_result[key]), axis=0)
+
+        print(np.mean(np.array(all_dataset_X)[:,32]))
+        print(np.mean(np.array(all_dataset_X)[:, 33:41]))
+
+        return
+
+
+        all_dataset_X_normalized = array_normalization(all_dataset_X)
+        all_dataset_Y_normalized = array_normalization(all_dataset_Y)
+        original_belief_normalized = array_normalization(original_belief)
+
+        model_list = []
+        total_R2_predict = 0
+        total_R2_no_predict = 0
+        total_MSE_predict = 0
+        total_MSE_no_predict = 0
+        for index in range(strategy_number):
+            # strate_dataset_X = all_dataset_X_normalized[:,index].reshape(-1, 1)
+            # strate_dataset_Y = all_dataset_Y_normalized[:, index]
+            strate_dataset_X = all_dataset_X_normalized[:, index]
+            strate_dataset_Y = all_dataset_Y_normalized[:, index]
+            strate_origin_belief = original_belief_normalized[:, index]
+
+
+            # window_size = 5
+            # strate_dataset_section_X = np.array([[[strate_dataset_X[i+j]] for i in range(window_size)] for j in range(strate_dataset_X.shape[0]-window_size)])
+            strate_dataset_section_X = np.array([[strate_dataset_X[i + j] for i in range(window_size)] for j in
+                                                 range(strate_dataset_X.shape[0] - window_size)])
+
+
+            strate_dataset_section_Y = strate_dataset_Y[window_size:]
+            strate_origin_belief_section = strate_origin_belief[window_size:]
+
+            pd_strate_dataset_section_Y = pd.DataFrame(strate_dataset_section_Y)
+            pd_strate_origin_belief_section = pd.DataFrame(strate_origin_belief_section)
+
+
+            X_train, X_test, y_train, y_test = train_test_split(strate_dataset_section_X, pd_strate_dataset_section_Y, test_size=0.1, random_state=1)
+
+            # KNN
+            model = neighbors.KNeighborsRegressor(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
+            # model = svm.SVR().fit(X_train, y_train)
+            model_list.append(model)
+
+
+
+            # LSTM
+            # model = Sequential()
+            # model.add(LSTM((1), batch_input_shape=(None,window_size,1), return_sequences=False))
+            # model.compile(loss='mean_squared_error',optimizer='adam',metrics=['accuracy'])
+            # model.summary()
+            # history = model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test), verbose=0)
+
+
+            y_predict = model.predict(X_test)
+            total_R2_predict += r2_score(y_test, y_predict)
+            total_R2_no_predict += r2_score(y_test, pd_strate_origin_belief_section.iloc[y_test.index])
+
+            total_MSE_predict += mean_squared_error(y_test, y_predict)
+            total_MSE_no_predict += mean_squared_error(y_test, pd_strate_origin_belief_section.iloc[y_test.index])
+
+        print(strate_dataset_section_X.shape)
+        print("\n total R2 score")
+        print(f"predict {total_R2_predict}")
+        print(f"no predict {total_R2_no_predict}")
+        print("total MSE")
+        print(f"predict {total_MSE_predict}")
+        print(f"predict {total_MSE_no_predict}")
+
+
+
+
+
+        # print(all_dataset_X.shape[0])
+        # window_size = 3
+        # section_dataset_X = np.array([[all_dataset_X[i+j] for i in range(window_size)] for j in range(all_dataset_X.shape[0]-window_size)])
+        # print(section_dataset_X)
+        # print(section_dataset_X.shape)
+        # print(all_dataset_Y.shape)
+        # print(all_dataset_Y[window_size:].shape)
+        # n_neighbors = 5
+        # knn = neighbors.KNeighborsRegressor(n_neighbors, weights='distance', algorithm='brute')
+        # model = knn.fit(section_dataset_X, all_dataset_Y[window_size:])
+        # ================ above estimate each strategy separately ================
+
+
+
+
+        # save trained model
+        os.makedirs("data/trained_ML_model_list", exist_ok=True)
+        the_file = open("data/trained_ML_model_list/knn_trained_model_"+schemes[schemes_index]+".pkl", "wb+")
+        pickle.dump(model_list, the_file)
+        the_file.close()
 
 
 
@@ -294,9 +416,11 @@ if __name__ == '__main__':
     window_size = 5
     n_neighbors = 50
     strategy_number = 8
-    train_ML_Belief_to_Belief(schemes,window_size,n_neighbors, strategy_number)
+    # train_ML_Belief_to_Belief(schemes,window_size,n_neighbors, strategy_number)
     # train_ML_Action_to_Belief(schemes,window_size,n_neighbors, strategy_number)
     # display_prediction_result(schemes, strategy_number)
+    x_length = 47
+    train_ML_predict_action(["ML_collect_data_PI"],x_length,n_neighbors, strategy_number)
     print('The scikit-learn version is {}.'.format(sklearn.__version__))
 
 

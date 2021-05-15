@@ -42,11 +42,11 @@ class game_class:
         print(f"Sim {simulation_id} creating game")
         self.lifetime = 0
         self.CKC_number = 6
-        self.strategy_number = 8     # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
-        self.use_bundle = True      # Note: False means defender only use one strategy each game
-        self.enable_IRS_recheck = False     # True means enable IRS rechecking
-        self.enable_IRS_recover = False     # True means enable IRS recovery
-        self.new_attacker_probability = att_arr_prob # 1  # 0 means only one attacker in game.
+        self.strategy_number = 8  # Note: 8 means the ninth strategy disabled, 9 means all strategie used.
+        self.use_bundle = True  # Note: False means defender only use one strategy each game
+        self.enable_IRS_recheck = False  # True means enable IRS rechecking
+        self.enable_IRS_recover = False  # True means enable IRS recovery
+        self.new_attacker_probability = att_arr_prob  # 1  # 0 means only one attacker in game.
         self.vary_name = vary_name  # vary_name and vary_value are used to locate ML model
         self.vary_value = vary_value
         self.DD_using = DD_using
@@ -101,6 +101,14 @@ class game_class:
         self.compromise_probability = []
         self.number_of_inside_attacker = []
         self.all_result_after_each_game = []
+        self.ML_x_data = []
+        self.ML_y_data = []
+        # self.att_previous_strat = np.zeros(self.strategy_number)
+        self.att_previous_impact = np.zeros(self.strategy_number)
+        self.def_previous_impact = np.zeros(self.strategy_number)
+        self.att_previous_overall_impact = 0
+        self.previous_uncertain = 0
+
 
     def defender_round(self):
         # save data for train KNN model
@@ -114,8 +122,6 @@ class game_class:
         # save data for train KNN
         # self.all_result_after_each_game.append(self.defender.observed_strategy_count.copy())
         self.all_result_after_each_game.append(self.defender.S_j.copy())
-
-
 
         # Observe CKC
         self.defender.decide_CKC_posi(get_CKC_list(self.attacker_list))
@@ -167,12 +173,10 @@ class game_class:
             attacker.choose_strategy(
                 self.defender.strategy_number, self.defender.strat_cost, self.defender.impact_record)
 
-
             if display:
                 print(f"attacker choose: {attacker.chosen_strategy + 1}")
             attack_result = attacker.execute_strategy(self.graph.network, self.defender.network,
                                                       self.node_size_multiplier, self.compromise_probability)
-
 
             attacker.update_attribute(self.defender.dec)
             self.update_graph()
@@ -233,7 +237,7 @@ class game_class:
     def IDS_IRS_evict(self):
         # IDS Eviction
         Th_risk = 7  # pre-set value
-        IRS_inspection_prob = 0.5 # 0.9 # probability to accurately detect false positive.
+        IRS_inspection_prob = 0.5  # 0.9 # probability to accurately detect false positive.
 
         all_nodes = self.graph.network.nodes(data=False)
         for index in all_nodes:
@@ -249,7 +253,7 @@ class game_class:
                     if display:
                         print(f"Evict node {index}, No DD using")
                     evict_a_node_without_update_criticality(index, self.graph.network,
-                                                self.defender.network, get_network_list(self.attacker_list))
+                                                            self.defender.network, get_network_list(self.attacker_list))
                     # self.NIDS_eviction[experiment_index_record] += 1
                     continue
 
@@ -258,10 +262,9 @@ class game_class:
                         if display:
                             print(f"Evict node {index}, importance > Th_risk")
                         evict_a_node_without_update_criticality(index, self.graph.network,
-                                                    self.defender.network,
-                                                    get_network_list(self.attacker_list))
-                            # self.NIDS_eviction[experiment_index_record] += 1
-
+                                                                self.defender.network,
+                                                                get_network_list(self.attacker_list))
+                        # self.NIDS_eviction[experiment_index_record] += 1
 
         # update criticality
         update_criticality(self.graph.network)
@@ -272,7 +275,6 @@ class game_class:
     def IRS_recover(self):
         if not self.enable_IRS_recover:
             return
-
 
         # decrease "recover_time", only recover the node with "recover_time" = 1
         all_nodes = self.graph.network.nodes(data=False)
@@ -299,7 +301,6 @@ class game_class:
                     else:
                         self.graph.network.nodes[index]["recover_time"] = random.randint(
                             recover_min_time, recover_max_time)
-
 
     def update_graph(self):
         update_criticality(self.graph.network)
@@ -336,7 +337,8 @@ class game_class:
                     print("attacker in honeypot")
                     self.evict_reason_history[0] += 1
                     self.evict_attacker(attacker)
-                elif self.graph.network.nodes[attacker.location]["evicted_mark"]:  # if the attacker located node is evicted
+                elif self.graph.network.nodes[attacker.location][
+                    "evicted_mark"]:  # if the attacker located node is evicted
                     self.evict_attacker(attacker)
                 else:
                     continue
@@ -360,7 +362,8 @@ class game_class:
                        self.defender.network, self.graph.connect_prob)
 
         # update defender impact (done)
-        self.defender.update_defense_impact(get_overall_attacker_impact_per_game(self.attacker_list, self.attacker_template))
+        self.defender.update_defense_impact(
+            get_overall_attacker_impact_per_game(self.attacker_list, self.attacker_template))
 
         # clean honeypot after each game
         if self.graph.using_honeynet:
@@ -388,7 +391,7 @@ class game_class:
 
     # Add attacker with probability. If no attacker in list, add one.
     def new_attacker(self, simulation_id, defender):
-        if random.random() < self.new_attacker_probability or len(self.attacker_list)==0:
+        if random.random() < self.new_attacker_probability or len(self.attacker_list) == 0:
             self.attacker_number += 1
             print(
                 f"\033[93m Sim {simulation_id} Creating attacker #{self.attacker_number} \033[0m"
@@ -411,12 +414,11 @@ class game_class:
                     # raise Exception("Error: attacker location doesn't exist in network")
                 if self.graph.network.has_node(attacker.location):
                     if self.graph.network.nodes[attacker.location]["type"] != 3:
-                        if self.graph.network.nodes[attacker.location]["evicted_mark"]:  # if the attacker located node is evicted
-                            counter+=1
+                        if self.graph.network.nodes[attacker.location][
+                            "evicted_mark"]:  # if the attacker located node is evicted
+                            counter += 1
 
         return counter
-
-
 
     def experiment_saving(self):
 
@@ -479,7 +481,7 @@ class game_class:
         self.att_CKC.append(get_CKC_list(self.attacker_list))
 
         # inside attacker counter
-        one_game_counter = [0,0]
+        one_game_counter = [0, 0]
         for attacker in self.attacker_list:
             one_game_counter[0] += 1
             if attacker.in_system_time > 1:
@@ -487,8 +489,57 @@ class game_class:
         # print(f"total vs inside attacker: {one_game_counter}")
         self.number_of_inside_attacker.append(one_game_counter)
 
+        # save data for train KNN
+        # save data x:
+        data_x = []
+        data_name = []
+        data_x = np.concatenate((data_x, self.defender.att_previous_strat))
+        data_name += ["att_str"]*len(self.defender.att_previous_strat)
+        data_x = np.concatenate((data_x, self.attacker_template.strat_cost))
+        data_name += ["att_cost"] * len(self.attacker_template.strat_cost)
+        data_x = np.concatenate((data_x, self.defender.strat_cost))
+        data_name += ["def_cost"] * len(self.defender.strat_cost)
+        data_x = np.concatenate((data_x, self.att_previous_impact)) # from index 24 to 31
+        data_name += ["att_impact"] * len(self.att_previous_impact)
+        data_x = np.concatenate((data_x, [self.att_previous_overall_impact]))  # index 32
+        data_name += ["att_OvAll_impact"]
+        data_x = np.concatenate((data_x, self.def_previous_impact)) # from index 33 to 40
+        data_name += ["def_impact"] * len(self.def_previous_impact)
+        data_x = np.concatenate((data_x, [self.previous_uncertain]))
+        data_name += ["uncert"]
+        data_x = np.concatenate((data_x, self.defender.att_previous_CKC))
+        data_name += ["CKC"] * len(self.defender.att_previous_CKC)
+        self.ML_x_data.append(data_x.tolist())
+        # for index in range(len(data_name)):
+        #     print(f"{index} : {data_name[index]}")
 
+        # update variable for next game
+        self.defender.att_previous_strat = np.zeros(
+            self.strategy_number)  # this variable updated when defenderr observe attackerr.
+        self.att_previous_impact = get_averaged_impact(self.attacker_list, self.attacker_template)
+        self.def_previous_impact = self.defender.impact_record
+        self.att_previous_overall_impact = get_overall_attacker_impact_per_game(self.attacker_list, self.attacker_template)
+        self.previous_uncertain = self.defender.uncertainty
 
+        # save data y: optimal strategy (max(utility))
+        utility = np.zeros((self.strategy_number, self.strategy_number))
+        attack_impact_record = get_averaged_impact(self.attacker_list, self.attacker_template)
+        for i in range(self.strategy_number):
+            for j in range(self.strategy_number):
+                utility[i, j] = (self.defender.impact_record[i] +
+                                 self.attacker_template.strat_cost[j] / 3) - (
+                                        self.defender.strat_cost[i] / 3 + attack_impact_record[j])
+        # utility_p = np.sum(utility,axis=1)
+        utility_p = np.zeros(self.strategy_number)
+        counter = 0
+        for attacker in self.attacker_list:
+            utility_p = utility_p + utility[:,attacker.chosen_strategy]
+            counter += 1
+
+        utility_p = utility_p/counter
+        max_value = max(utility_p)
+        max_indexs = [index for index in range(len(utility_p)) if utility_p[index] == max_value]
+        self.ML_y_data.append(random.choice(max_indexs))
 
         # # EU_C & EU_CMS
         # self.att_EU_C = np.vstack((self.att_EU_C, self.attacker.EU_C))
