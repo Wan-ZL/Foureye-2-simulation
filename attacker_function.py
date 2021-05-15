@@ -836,6 +836,7 @@ def attacker_class_choose_strategy(self, def_strategy_number,
     a = 1
     b = 9
 
+
     # eq. 8
     EU_C = np.zeros(self.strategy_number)
     for i in range(self.strategy_number):
