@@ -66,6 +66,8 @@ def game_start(simulation_id=1,
             print("Sorted vulnerability of Compromised Nodes:")
             print(sorted(vulnerability_set_of_compromised_node))
 
+
+        # print(np.mean(list(nx.get_node_attributes(game.graph.network, "normalized_vulnerability").values())))
     return game
 
 

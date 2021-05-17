@@ -315,7 +315,14 @@ def train_ML_predict_action(schemes, x_length, n_neighbors, strategy_number):
                 # all_dataset_X = np.concatenate((all_dataset_X, ML_x_data_all_result[key]), axis=0)
                 # all_dataset_Y = np.concatenate((all_dataset_Y, ML_y_data_all_result[key]), axis=0)
 
-        print(np.mean(np.array(all_dataset_X)[:,32]))
+        print(np.sum(np.array(all_dataset_Y) == 0)/len(all_dataset_Y))
+        print(np.sum(np.array(all_dataset_Y) == 5) / len(all_dataset_Y))
+        print(np.sum(np.array(all_dataset_Y) == 0) / len(all_dataset_Y) + np.sum(np.array(all_dataset_Y) == 5) / len(all_dataset_Y))
+        print("the X")
+        print(np.sum(np.array(all_dataset_X)[:,24:32], axis=1).shape)
+        print(np.sum(np.array(all_dataset_X)[:,24:32] == 0))
+        print("zero condition:")
+        print(np.sum(np.sum(np.array(all_dataset_X)[:,24:32], axis=1) == 0) / np.sum(np.array(all_dataset_X)[:,24:32], axis=1).size)
         print(np.mean(np.array(all_dataset_X)[:, 33:41]))
 
         return

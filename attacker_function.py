@@ -143,12 +143,12 @@ def attack_impact(G, new_compromised_list, node_number):
     if len(new_compromised_list) == 0:
         return 0
 
-    N = G.number_of_nodes()
+    # N = G.number_of_nodes()
 
     total_criticality = 0
     for n in new_compromised_list:
         total_criticality += G.nodes[n]["criticality"]
-    ai = total_criticality / node_number #G.number_of_nodes() #/ G.number_of_nodes()  # for test, original uncomment
+    ai = total_criticality #/ node_number #G.number_of_nodes() #/ G.number_of_nodes()  # for test, original uncomment
     return ai
 
 
@@ -791,6 +791,11 @@ def get_overall_attacker_impact_per_game(attacker_list, attacker_template):
     overall_ai = sum(ai_k) / len(attacker_list)
     return overall_ai
 
+def attack_impact_per_strategy(attacker_list, attacker_template):
+    att_impact = np.zeros(attacker_template.strategy_number)
+    for attacker in attacker_list:
+        att_impact[attacker.chosen_strategy] += attacker.impact_record[attacker.chosen_strategy]
+    return att_impact
 
 
 def _2darray_normalization(_2d_array):

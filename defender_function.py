@@ -35,7 +35,7 @@ def def_strategy_cost(strategy_number):
     defend_cost[6] = 2
     defend_cost[7] = 2
     if strategy_number-1 == 8: defend_cost[8] = 0
-    defend_cost = np.ones(strategy_number)          # test
+    # defend_cost = np.ones(strategy_number)          # test
     return defend_cost
 
 
@@ -758,12 +758,20 @@ class defender_class:
             if random.random() > g:
                 self.CKC_list.append(att_CKC)
 
-    def update_defense_impact(self, overall_attack_impact):
+    def update_defense_impact(self, all_attack_impact):
         if not self.chosen_strategy_list:
             return
 
+        xi = 5
+        # di = 0
+        # for att_impact in all_attack_impact:
+        #     di += math.exp(-1 * xi * att_impact)
+        #     if att_impact != 0:
+        #         print("the value")
+        #         print(math.exp(-1 * xi * att_impact))
+
         for strategy_id in self.chosen_strategy_list:
-            self.impact_record[strategy_id] = 1 - overall_attack_impact
+            self.impact_record[strategy_id] = math.exp(-1 * xi * sum(all_attack_impact)) # di
 
 
 # In[ ]:
