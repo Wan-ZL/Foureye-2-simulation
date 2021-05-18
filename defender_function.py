@@ -437,7 +437,7 @@ def defender_class_create_bundle(self, DD_using):
 # In[42]:
 
 
-def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, attack_impact_record, vary_name, vary_value):
+def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, attack_impact_record, vary_name, vary_value, att_overall_impact):
     S_j = np.ones(self.strategy_number) / self.strategy_number  # make sure the sum of S_j is 1
     c_kj = _2darray_normalization(self.observed_strategy_count)
     p_k = array_normalization(self.observed_CKC_count)
@@ -462,51 +462,35 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
         #     for k in range(len(p_k)):
         #         temp_S += p_k[k] * c_kj[k][j]
         #     S_j[j] = temp_S
-    if self.decision_scheme == 2:
-        # S_j = np.ones(self.strategy_number) / self.strategy_number # for teste
-        # #  ============ old way ============
-        # use trained model
-        # if self.uncertain_scheme:   # when consider uncertianty
-        #     # print("using IPI")
-        #     the_file = open("data/trained_ML_model/knn_trained_model_DD-IPI.pkl", "rb")
-        # else:                       # when not consider uncertainty
-        #     the_file = open("data/trained_ML_model/knn_trained_model_DD-PI.pkl", "rb")
-        # knn_model = pickle.load(the_file)
-        # the_file.close()
-        # y_pred = knn_model.predict([self.S_j])
-        #
-        # if sum(y_pred[0]) != 0: # divide zero would get 'nan'
-        #     S_j = y_pred[0]/sum(y_pred[0])  # normalization
-        # print(S_j)
-
-        # ======= predict strategy separately =======
-        # use trained model
-        if vary_name is None:
-            # fixed setting
-            if self.uncertain_scheme:  # when consider uncertianty
-                # print("using IPI")
-                the_file = open("data/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
-            else:  # when not consider uncertainty
-                the_file = open("data/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
-        else:
-            # varying settings
-            if self.uncertain_scheme:  # when consider uncertianty
-                # print("using IPI")
-                the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
-            else:  # when not consider uncertainty
-                the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
-
-        knn_model_list = pickle.load(the_file)
-        the_file.close()
-        y_pred = np.zeros(self.strategy_number)
-        s_j_window_record_normalized = _2darray_normalization(self.s_j_window_record)
-        for index in range(len(knn_model_list)):
-            y_pred[index] = knn_model_list[index].predict(s_j_window_record_normalized[:, index].reshape(1, -1))
-
-        # print(y_pred)
-        if sum(y_pred) != 0:  # divide zero would get 'nan'
-            S_j = y_pred / sum(y_pred)  # normalization
-        # ===========================================
+    # if self.decision_scheme == 2:
+    #     # ======= predict strategy separately =======
+    #     # use trained model
+    #     if vary_name is None:
+    #         # fixed setting
+    #         if self.uncertain_scheme:  # when consider uncertianty
+    #             # print("using IPI")
+    #             the_file = open("data/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
+    #         else:  # when not consider uncertainty
+    #             the_file = open("data/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
+    #     else:
+    #         # varying settings
+    #         if self.uncertain_scheme:  # when consider uncertianty
+    #             # print("using IPI")
+    #             the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
+    #         else:  # when not consider uncertainty
+    #             the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
+    #
+    #     knn_model_list = pickle.load(the_file)
+    #     the_file.close()
+    #     y_pred = np.zeros(self.strategy_number)
+    #     s_j_window_record_normalized = _2darray_normalization(self.s_j_window_record)
+    #     for index in range(len(knn_model_list)):
+    #         y_pred[index] = knn_model_list[index].predict(s_j_window_record_normalized[:, index].reshape(1, -1))
+    #
+    #     # print(y_pred)
+    #     if sum(y_pred) != 0:  # divide zero would get 'nan'
+    #         S_j = y_pred / sum(y_pred)  # normalization
+    #     # ===========================================
 
     # eq. 17
     utility = np.zeros((self.strategy_number, att_strategy_number))
@@ -562,17 +546,50 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
     # save for training ML model
     self.S_j = S_j
 
-
-    # Selection Scheme
-    if self.decision_scheme == 0 or self.decision_scheme == 3:  # for random selection scheme
-        self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
-    elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
-        if sum(bundle_HEU) == 0:  # fix python 3.5 error
-            self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
+    if self.decision_scheme == 2:
+        # use trained model
+        if vary_name is None:
+            # fixed setting
+            if self.uncertain_scheme:  # when consider uncertianty
+                # print("using IPI")
+                the_file = open("data/trained_ML_model/trained_classi_model_ML_collect_data_IPI.pkl", "rb")
+            else:  # when not consider uncertainty
+                the_file = open("data/trained_ML_model/trained_classi_model_ML_collect_data_PI.pkl", "rb")
         else:
-            self.chosen_strategy_list = random.choices(self.optional_bundle_list, weights=bundle_HEU)[0]
+            raise Exception("No varying ML model yet")
+            # varying settings
+            # if self.uncertain_scheme:  # when consider uncertianty
+            #     # print("using IPI")
+            #     the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
+            # else:  # when not consider uncertainty
+            #     the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
+
+        knn_model = pickle.load(the_file)
+        the_file.close()
+        data_x = []
+        data_x = np.concatenate((data_x, self.att_previous_strat))
+        data_x = np.concatenate((data_x, attack_cost_record))
+        data_x = np.concatenate((data_x, self.strat_cost))
+        data_x = np.concatenate((data_x, attack_impact_record))  # from index 24 to 31
+        data_x = np.concatenate((data_x, [att_overall_impact]))  # index 32
+        data_x = np.concatenate((data_x, self.impact_record))  # from index 33 to 40
+        data_x = np.concatenate((data_x, [self.uncertainty]))
+        data_x = np.concatenate((data_x, self.att_previous_CKC))
+        y_pred = knn_model.predict(data_x.reshape(1, -1))
+        self.chosen_strategy_list = y_pred
+
+
     else:
-        raise Exception("Error: Unknown decision_scheme")
+        # Selection Scheme
+        if self.decision_scheme == 0 or self.decision_scheme == 3:  # for random selection scheme
+            self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
+        elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
+            if sum(bundle_HEU) == 0:  # fix python 3.5 error
+                self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
+            else:
+                self.chosen_strategy_list = random.choices(self.optional_bundle_list, weights=bundle_HEU)[0]
+        else:
+            raise Exception("Error: Unknown decision_scheme")
 
     # update 'dec'
     total_cost = 0 #{1,2,3}
@@ -758,8 +775,12 @@ class defender_class:
             if random.random() > g:
                 self.CKC_list.append(att_CKC)
 
-    def update_defense_impact(self, all_attack_impact):
+    def update_defense_impact(self, all_attack_impact, att_strat_list, strat_number):
+        # if defender doesn't choose any strategy
         if not self.chosen_strategy_list:
+            return
+        # if attacker doesn't choose any strategy
+        if not att_strat_list:
             return
 
         xi = 5
@@ -770,8 +791,11 @@ class defender_class:
         #         print("the value")
         #         print(math.exp(-1 * xi * att_impact))
 
+        strat_count = [att_strat_list.count(stra) for stra in np.arange(strat_number)]
+        strat_prob = np.array(strat_count)/sum(strat_count)
         for strategy_id in self.chosen_strategy_list:
-            self.impact_record[strategy_id] = math.exp(-1 * xi * sum(all_attack_impact)) # di
+            self.impact_record[strategy_id] = sum([strat_prob[stra] * math.exp(-1 * xi * all_attack_impact[stra]) for stra in np.arange(strat_number)])
+            # self.impact_record[strategy_id] = math.exp(-1 * xi * sum(all_attack_impact))  # di
 
 
 # In[ ]:

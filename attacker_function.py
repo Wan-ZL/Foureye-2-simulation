@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+#
 
 from main import display
 # from graph_function import *
@@ -16,12 +16,13 @@ import math
 import copy
 import time
 import pickle
+import operator
 
 
-# In[2]:
+#
 
 
-# In[3]:
+#
 
 
 def att_strategy_option_matrix(CKC_number, strategy_number):
@@ -56,7 +57,7 @@ def att_strategy_option_matrix(CKC_number, strategy_number):
     return strat_option
 
 
-# In[4]:
+
 
 
 def att_strategy_cost(strategy_number):
@@ -75,7 +76,6 @@ def att_strategy_cost(strategy_number):
     return attack_cost
 
 
-# In[5]:
 
 
 def update_strategy_probability(opponent_strat_history):
@@ -91,7 +91,6 @@ def update_strategy_probability(opponent_strat_history):
     return return_result
 
 
-# In[6]:
 
 
 def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_scheme, decision_scheme):
@@ -110,7 +109,6 @@ def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_s
             return 0            # for test. orignial: 0
 
 
-# In[7]:
 
 
 # APV: value of an intermediate node i in an attack path, APV=-1 means the node is detected as Honeypot
@@ -133,7 +131,7 @@ def calc_APV(G_att, G_real, node_ID, attack_cost, attack_detect_prob):
         # if the node is honeypot, the APV for honeypot is 0.
         return -1
     else:
-        return (1 - (attack_cost / 3)) * G_att.nodes[node_ID]["normalized_vulnerability"]
+        return (1 - math.exp(-(1/attack_cost))) * G_att.nodes[node_ID]["normalized_vulnerability"]
 
 
 # Attack Impact of given attack k of attacker i
@@ -152,7 +150,6 @@ def attack_impact(G, new_compromised_list, node_number):
     return ai
 
 
-# In[9]:
 
 
 def get_attacker_network_list(attacker_list):
@@ -162,13 +159,12 @@ def get_attacker_network_list(attacker_list):
     return G_att_list
 
 
-# In[ ]:
 
 
-# In[ ]:
 
 
-# In[10]:
+
+
 
 
 # AS1 – Monitoring attack
@@ -197,7 +193,6 @@ def attack_AS_1(G_real, G_att, G_def, node_info_list, monit_time, attack_detect_
     return attack_result
 
 
-# In[11]:
 
 
 # AS2 – Social engineering
@@ -245,45 +240,37 @@ def attack_AS_2(node_info_list, G_real, G_att, G_def, P_fake,
     max_APV = 0
     att_neighbors = [n for n in G_att[location]]
 
-    # decide which node to compromise
+    att_APV_zip_list = []
     for node_id in att_neighbors:
         if G_real.has_node(node_id):
-            if calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
-                        attack_detect_prob) >= max_APV:  # choose node with APV
-                max_APV = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"],
-                                   attack_cost, attack_detect_prob)
-                max_APV_id = G_att.nodes[node_id]["id"]
+            APV_value = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
+                        attack_detect_prob)
+            att_APV_zip_list.append((APV_value, node_id))
+    APV_zip_sorted = sorted(att_APV_zip_list, reverse=True, key = operator.itemgetter(0))
 
-    if max_APV_id is None:
-        if display:
-            print("no legitimate node in collection list \U0001F630")
-        return attack_result
+    for APV_value, node_id in APV_zip_sorted:
+        # failed for evicted node
+        if G_real.nodes[node_id]["evicted_mark"]:
+            continue
 
-    # failed for evicted node
-    if G_real.nodes[max_APV_id]["evicted_mark"]:
-        return attack_result
+        # collusive attack
+        if G_att.nodes[node_id]["compromised_status"] and G_real.nodes[
+            node_id]["compromised_status"]:
+            attack_result["ids"].append(node_id)
+            if display: print("AS2: collusive attack")
+            return attack_result
 
-    # collusive attack
-    if G_att.nodes[max_APV_id]["compromised_status"] and G_real.nodes[
-        max_APV_id]["compromised_status"]:
-        attack_result["ids"].append(max_APV_id)
-        if display: print("AS2: collusive attack")
-        return attack_result
+        # compromise attempt
+        if random.random() < G_real.nodes[node_id]["normalized_vulnerability"]:
+            attack_result["ids"].append(node_id)
+            # set it compromised for real & att
+            G_real.nodes[node_id]["compromised_status"] = True
+            G_att.nodes[node_id]["compromised_status"] = True
+            return attack_result
 
-    # compromise attempt
-    if random.random() < G_real.nodes[max_APV_id]["normalized_vulnerability"]:
-        attack_result["ids"].append(max_APV_id)
-        # set it compromised for real & att
-        G_real.nodes[max_APV_id]["compromised_status"] = True
-        G_att.nodes[max_APV_id]["compromised_status"] = True
-    else:
-        if display:
-            print("AS2: unsuccessful on", max_APV_id, "with vul",
-                  G_real.nodes[max_APV_id]["normalized_vulnerability"])
     return attack_result
 
 
-# In[12]:
 
 
 # AS3 – Botnet-based attack
@@ -298,20 +285,20 @@ def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
             print("get fake key, failed to compromise")
         return attack_result
 
-    attacked_adjacent = []
+    attacker_adjacent = []
 
     for node_id in collection_list:
     # for node_id in G_real.nodes():      # test, original: above one
         if not G_real.nodes[node_id]["evicted_mark"]:
             # if attacker detect deception, use real network
             if random.random() < attack_detect_prob:
-                attacked_adjacent += graph_function.adjacent_node(G_real, node_id)
+                attacker_adjacent += graph_function.adjacent_node(G_real, node_id)
             else:
-                attacked_adjacent += graph_function.adjacent_node(G_att, node_id)
+                attacker_adjacent += graph_function.adjacent_node(G_att, node_id)
 
-    attacked_adjacent = list(set(attacked_adjacent))
-    # print(attacked_adjacent)
-    for n in attacked_adjacent:
+    attacker_adjacent = list(set(attacker_adjacent))
+    # print(attacker_adjacent)
+    for n in attacker_adjacent:
         if G_att.nodes[n]["compromised_status"] and G_real.nodes[n][
             "compromised_status"]:
             # collusive attack
@@ -327,7 +314,6 @@ def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
     return attack_result
 
 
-# In[13]:
 
 
 # AS4 – Distributed Denial-of-Service (DDoS)
@@ -339,15 +325,15 @@ def attack_AS_4(G_real, G_att, G_def, attack_detect_prob, P_fake, attacker_locat
     attack_result = {"attack_cost": attack_cost, "ids": []}
 
     if random.random() < attack_detect_prob:
-        attacker_adjacent = graph_function.adjacent_node(G_real, attacker_locaton)
+        att_neighbors = graph_function.adjacent_node(G_real, attacker_locaton)
     else:
-        attacker_adjacent = graph_function.adjacent_node(G_att, attacker_locaton)
+        att_neighbors = graph_function.adjacent_node(G_att, attacker_locaton)
 
     max_APV_id = None
     max_APV = 0
 
     # perform DDoS
-    for node_id in attacker_adjacent:
+    for node_id in att_neighbors:
         if G_real.has_node(node_id):
             G_real.nodes[node_id]["unknown vulnerability"][0] = min(
                 G_real.nodes[node_id]["unknown vulnerability"][0] * 1.1, 10)
@@ -366,47 +352,38 @@ def attack_AS_4(G_real, G_att, G_def, attack_detect_prob, P_fake, attacker_locat
             print("get fake key, failed to compromise")
         return attack_result
 
-    # decide which node to compromise
-    for node_id in attacker_adjacent:
-        if G_att.has_node(node_id):
-            if calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
-                        attack_detect_prob) >= max_APV:  # choose node with APV
-                max_APV = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"],
-                                   attack_cost, attack_detect_prob)
-                max_APV_id = G_att.nodes[node_id]["id"]
+    att_APV_zip_list = []
 
-    if max_APV_id is None:
-        if display:
-            print("attacker have no legitimate adjacent node \U0001F630")
-        return attack_result
+    for node_id in att_neighbors:
+        if G_real.has_node(node_id):
+            APV_value = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
+                                 attack_detect_prob)
+            att_APV_zip_list.append((APV_value, node_id))
+    APV_zip_sorted = sorted(att_APV_zip_list, reverse=True, key = operator.itemgetter(0))
 
-    # failed for evicted node
-    if G_real.nodes[max_APV_id]["evicted_mark"]:
-        return attack_result
+    for APV_value, node_id in APV_zip_sorted:
+        # failed for evicted node
+        if G_real.nodes[node_id]["evicted_mark"]:
+            continue
 
-    # collusive attack
-    if G_att.nodes[max_APV_id]["compromised_status"] and G_real.nodes[
-        max_APV_id]["compromised_status"]:
-        attack_result["ids"].append(max_APV_id)
-        if display: print("AS4: collusive attack")
-        return attack_result
+        # collusive attack
+        if G_att.nodes[node_id]["compromised_status"] and G_real.nodes[
+            node_id]["compromised_status"]:
+            attack_result["ids"].append(node_id)
+            if display: print("AS4: collusive attack")
+            return attack_result
 
-    # compromise attempt
-    if random.random() < G_real.nodes[max_APV_id]["normalized_vulnerability"]:
-        attack_result["ids"].append(max_APV_id)
-        # set it compromised
-        G_real.nodes[max_APV_id]["compromised_status"] = True
-        G_att.nodes[max_APV_id]["compromised_status"] = True
-
-    else:
-        if display:
-            print("AS4: unsuccessful on", max_APV_id, "with vul",
-                  G_real.nodes[max_APV_id]["normalized_vulnerability"])
+        # compromise attempt
+        if random.random() < G_real.nodes[node_id]["normalized_vulnerability"]:
+            attack_result["ids"].append(node_id)
+            # set it compromised
+            G_real.nodes[node_id]["compromised_status"] = True
+            G_att.nodes[node_id]["compromised_status"] = True
+            return attack_result
 
     return attack_result
 
 
-# In[14]:
 
 
 # AS5 – Zero-day attacks
@@ -414,47 +391,44 @@ def attack_AS_5(G_real, G_att, G_def, attacker_locaton, attack_detect_prob):
     attack_cost = 1
 
     if random.random() < attack_detect_prob:
-        attacked_adjacent = graph_function.adjacent_node(G_real, attacker_locaton)
+        attacker_adjacent = graph_function.adjacent_node(G_real, attacker_locaton)
     else:
-        attacked_adjacent = graph_function.adjacent_node(G_att, attacker_locaton)
+        attacker_adjacent = graph_function.adjacent_node(G_att, attacker_locaton)
 
     attack_result = {"attack_cost": attack_cost, "ids": []}
 
-    max_APV_id = None
-    max_APV = 0
-    # decide which node to compromise
-    for n in attacked_adjacent:
-        if calc_APV(G_att, G_real, n, attack_cost, attack_detect_prob) >= max_APV:
-            max_APV_id = n
-            max_APV = calc_APV(G_att, G_real, n, attack_cost, attack_detect_prob)
+    att_APV_zip_list = []
 
-    if max_APV_id is None:
-        if display:
-            print("no legitimate neighbor node \U0001F630")
-        return attack_result
+    for node_id in attacker_adjacent:
+        if G_real.has_node(node_id):
+            APV_value = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
+                                 attack_detect_prob)
+            att_APV_zip_list.append((APV_value, node_id))
+    APV_zip_sorted = sorted(att_APV_zip_list, reverse=True, key = operator.itemgetter(0))
 
-    # failed for evicted node
-    if G_real.nodes[max_APV_id]["evicted_mark"]:
-        return attack_result
+    for APV_value, node_id in APV_zip_sorted:
+        # failed for evicted node
+        if G_real.nodes[node_id]["evicted_mark"]:
+            continue
 
-    # collusive attack
-    if G_att.nodes[max_APV_id]["compromised_status"] and G_real.nodes[
-        max_APV_id]["compromised_status"]:
-        attack_result["ids"].append(max_APV_id)
-        if display: print("AS5: collusive attack")
-        return attack_result
+        # collusive attack
+        if G_att.nodes[node_id]["compromised_status"] and G_real.nodes[
+            node_id]["compromised_status"]:
+            attack_result["ids"].append(node_id)
+            if display: print("AS4: collusive attack")
+            return attack_result
 
-    #     try compromising
-    if random.uniform(0, 10) <= G_real.nodes[max_APV_id]["normalized_vulnerability"]:
-        G_real.nodes[max_APV_id]["compromised_status"] = True
-        G_att.nodes[max_APV_id]["compromised_status"] = True
-
-        # attack_result["ids"].append(max_APV_id)
+        # compromise attempt
+        if random.random() < G_real.nodes[node_id]["normalized_vulnerability"]:
+            attack_result["ids"].append(node_id)
+            # set it compromised
+            G_real.nodes[node_id]["compromised_status"] = True
+            G_att.nodes[node_id]["compromised_status"] = True
+            return attack_result
 
     return attack_result
 
 
-# In[15]:
 
 
 # AS6 – Breaking encryption
@@ -471,52 +445,43 @@ def attack_AS_6(G_real, G_att, G_def, attacker_locaton, P_fake,
         return attack_result
 
     if random.random() < attack_detect_prob:
-        attacked_adjacent = graph_function.adjacent_node(G_real, attacker_locaton)
+        attacker_adjacent = graph_function.adjacent_node(G_real, attacker_locaton)
     else:
-        attacked_adjacent = graph_function.adjacent_node(G_att, attacker_locaton)
+        attacker_adjacent = graph_function.adjacent_node(G_att, attacker_locaton)
 
-    # decide which node to compromise
-    max_APV_id = None
-    max_APV = 0
-    for n in attacked_adjacent:
-        if calc_APV(G_att, G_real, n, attack_cost,
-                    attack_detect_prob) >= max_APV:
-            max_APV_id = n
-            max_APV = calc_APV(G_att, G_real, n, attack_cost,
-                               attack_detect_prob)
+    att_APV_zip_list = []
 
-    if max_APV_id is None:
-        if display:
-            print("no legitimate neighbor node \U0001F630")
-        return attack_result
+    for node_id in attacker_adjacent:
+        if G_real.has_node(node_id):
+            APV_value = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
+                                 attack_detect_prob)
+            att_APV_zip_list.append((APV_value, node_id))
+    APV_zip_sorted = sorted(att_APV_zip_list, reverse=True, key = operator.itemgetter(0))
 
-    # failed for evicted node
-    if G_real.nodes[max_APV_id]["evicted_mark"]:
-        return attack_result
+    for APV_value, node_id in APV_zip_sorted:
+        # failed for evicted node
+        if G_real.nodes[node_id]["evicted_mark"]:
+            continue
 
-    # collusive attack
-    if G_att.nodes[max_APV_id]["compromised_status"] and G_real.nodes[
-        max_APV_id]["compromised_status"]:
-        attack_result["ids"].append(max_APV_id)
-        if display: print("AS6: collusive attack")
-        return attack_result
+        # collusive attack
+        if G_att.nodes[node_id]["compromised_status"] and G_real.nodes[
+            node_id]["compromised_status"]:
+            attack_result["ids"].append(node_id)
+            if display: print("AS4: collusive attack")
+            return attack_result
 
-    # compromise attempt
-    if random.random() <= sum(
-            G_real.nodes[max_APV_id]["encryption vulnerability"]) / len(
-        G_real.nodes[max_APV_id]["encryption vulnerability"]):
-        G_real.nodes[max_APV_id]["compromised_status"] = True
-        G_att.nodes[max_APV_id]["compromised_status"] = True
-
-        attack_result["ids"].append(max_APV_id)
-    else:
-        if display:
-            print("AS6: unsuccessful on", max_APV_id, "with APV", max_APV)
+        # compromise attempt
+        if random.random() < sum(
+            G_real.nodes[node_id]["encryption vulnerability"]) / len(G_real.nodes[node_id]["encryption vulnerability"]):
+            attack_result["ids"].append(node_id)
+            # set it compromised
+            G_real.nodes[node_id]["compromised_status"] = True
+            G_att.nodes[node_id]["compromised_status"] = True
+            return attack_result
 
     return attack_result
 
 
-# In[16]:
 
 
 # AS7 – Fake identity
@@ -555,56 +520,53 @@ def attack_AS_7(G_real, G_att, G_def, attacker_locaton, P_fake,
             print("get fake key, failed to compromise")
         return attack_result
 
-    # decide which node to compromise
-    max_APV_id = None
-    max_APV = 0
-    for n in attacker_adjacent:
-        if calc_APV(G_att, G_real, n, attack_cost,
-                    attack_detect_prob) >= max_APV:
-            max_APV_id = n
-            max_APV = calc_APV(G_att, G_real, n, attack_cost,
-                               attack_detect_prob)
+    att_APV_zip_list = []
 
-    if max_APV_id is None:
-        if display:
-            print("no legitimate neighbor node \U0001F630")
-        return attack_result
+    for node_id in attacker_adjacent:
+        if G_real.has_node(node_id):
+            APV_value = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
+                                 attack_detect_prob)
+            att_APV_zip_list.append((APV_value, node_id))
 
-    # failed for evicted node
-    if G_real.nodes[max_APV_id]["evicted_mark"]:
-        return attack_result
 
-    # collusive attack
-    if G_att.nodes[max_APV_id]["compromised_status"] and G_real.nodes[
-        max_APV_id]["compromised_status"]:
-        attack_result["ids"].append(max_APV_id)
-        if display: print("AS6: collusive attack")
-        return attack_result
+    APV_zip_sorted = sorted(att_APV_zip_list, reverse=True, key = operator.itemgetter(0))
 
-    # try compromising
-    for index in range(len(G_att.nodes[n]["encryption vulnerability"])):
-        if random.uniform(
-                0, 10
-        ) <= G_real.nodes[max_APV_id]["encryption vulnerability"][index]:
-            G_real.nodes[max_APV_id]["compromised_status"] = True
-            G_att.nodes[max_APV_id]["compromised_status"] = True
+    for APV_value, node_id in APV_zip_sorted:
+        # failed for evicted node
+        if G_real.nodes[node_id]["evicted_mark"]:
+            continue
 
-            attack_result["ids"].append(max_APV_id)
-            break
+        # collusive attack
+        if G_att.nodes[node_id]["compromised_status"] and G_real.nodes[
+            node_id]["compromised_status"]:
+            attack_result["ids"].append(node_id)
+            if display: print("AS4: collusive attack")
+            return attack_result
+
+        # compromise attempt
+        if random.random() < sum(
+                G_real.nodes[node_id]["encryption vulnerability"]) / len(
+            G_real.nodes[node_id]["encryption vulnerability"]):
+            attack_result["ids"].append(node_id)
+            # set it compromised
+            G_real.nodes[node_id]["compromised_status"] = True
+            G_att.nodes[node_id]["compromised_status"] = True
+            return attack_result
 
     return attack_result
 
 
-# In[17]:
+
+
 
 
 # AS8 – Data exfiltration
 def attack_AS_8(G_real, G_att, G_def, compromised_nodes, attacker_locaton,
                 P_fake, attack_detect_prob, node_size_multiplier):
     if random.random() < attack_detect_prob:
-        attacked_adjacent = graph_function.adjacent_node(G_real, attacker_locaton)
+        attacker_adjacent = graph_function.adjacent_node(G_real, attacker_locaton)
     else:
-        attacked_adjacent = graph_function.adjacent_node(G_att, attacker_locaton)
+        attacker_adjacent = graph_function.adjacent_node(G_att, attacker_locaton)
 
     attack_cost = 3
     attack_result = {
@@ -613,42 +575,44 @@ def attack_AS_8(G_real, G_att, G_def, compromised_nodes, attacker_locaton,
         "data_exfiltrated": False
     }
 
-    # decide which node to compromise
-    max_APV_id = None
-    max_APV = 0
-    for n in attacked_adjacent:
-        if calc_APV(G_att, G_real, n, attack_cost,
-                    attack_detect_prob) >= max_APV:
-            max_APV_id = n
-            max_APV = calc_APV(G_att, G_real, n, attack_cost,
-                               attack_detect_prob)
-
-    if max_APV_id is None:
-        if display:
-            print("no legitimate neighbor node \U0001F630")
-        return attack_result
-
-    # failed for evicted node
-    if G_real.nodes[max_APV_id]["evicted_mark"]:
-        return attack_result
-
-    if G_att.nodes[max_APV_id]["compromised_status"] and G_real.nodes[
-        max_APV_id]["compromised_status"]:
-        # collusive attack
-        attack_result["ids"].append(max_APV_id)
-    else:
-        if random.random() <= G_real.nodes[max_APV_id]["normalized_vulnerability"]:
-            # compromise attempt
-            G_real.nodes[max_APV_id]["compromised_status"] = True
-            G_att.nodes[max_APV_id]["compromised_status"] = True
-
-            attack_result["ids"].append(max_APV_id)
 
     if random.random() <= P_fake:
         if display:
             print("get fake key, failed to compromise")
     else:
-        compromised_nodes.append(max_APV_id)
+        att_APV_zip_list = []
+
+        for node_id in attacker_adjacent:
+            if G_real.has_node(node_id):
+                APV_value = calc_APV(G_att, G_real, G_att.nodes[node_id]["id"], attack_cost,
+                                     attack_detect_prob)
+                att_APV_zip_list.append((APV_value, node_id))
+
+        APV_zip_sorted = sorted(att_APV_zip_list, reverse=True, key = operator.itemgetter(0))
+
+        for APV_value, node_id in APV_zip_sorted:
+            # failed for evicted node
+            if G_real.nodes[node_id]["evicted_mark"]:
+                continue
+
+            # collusive attack
+            if G_att.nodes[node_id]["compromised_status"] and G_real.nodes[
+                node_id]["compromised_status"]:
+                attack_result["ids"].append(node_id)
+                if display: print("AS4: collusive attack")
+                compromised_nodes.append(node_id)
+                break
+
+            # compromise attempt
+            if random.random() < G_real.nodes[node_id]["normalized_vulnerability"]:
+                attack_result["ids"].append(node_id)
+                # set it compromised
+                G_real.nodes[node_id]["compromised_status"] = True
+                G_att.nodes[node_id]["compromised_status"] = True
+                compromised_nodes.append(node_id)
+                break
+
+
 
     # data exfiltration
     Thres_c = 30 * node_size_multiplier  # 30  # pre-set value
@@ -687,7 +651,6 @@ def get_network_list(attacker_list):
     return G_att_list
 
 
-# In[20]:
 
 
 def get_average_detect_prob(attacker_list):
@@ -702,7 +665,7 @@ def get_average_detect_prob(attacker_list):
     return average_value
 
 
-# In[ ]:
+
 
 
 def get_detect_prob_list(attacker_list):
@@ -712,7 +675,7 @@ def get_detect_prob_list(attacker_list):
     return detect_prob_list
 
 
-# In[ ]:
+
 
 
 def get_P_fake_list(attacker_list):
@@ -722,7 +685,7 @@ def get_P_fake_list(attacker_list):
     return P_fake_list
 
 
-# In[ ]:
+
 
 
 def get_CKC_list(attacker_list):
@@ -754,7 +717,6 @@ def get_ID_list(attacker_list):
     return ID_list
 
 
-# In[3]:
 
 
 # Averaged Impact ai_k
@@ -901,7 +863,7 @@ def attacker_class_choose_strategy(self, def_strategy_number,
     return self.chosen_strategy
 
 
-# In[ ]:
+
 
 
 def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, compromise_probability):
@@ -1021,7 +983,7 @@ def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, c
     return return_value
 
 
-# In[ ]:
+
 
 
 class attacker_class:
@@ -1131,6 +1093,9 @@ class attacker_class:
         if self.CKC_position >= 2:
             self.in_system_time += 1
 
+        # reset fake key
+        self.P_fake = [0]
+
         # belief context
         self.belief_context[0] = 1 - sum(self.belief_context[1:])
 
@@ -1159,7 +1124,7 @@ class attacker_class:
         self.location = random.choice(compromised_neighbor_list)
 
 
-# In[ ]:
 
 
-# In[ ]:
+
+

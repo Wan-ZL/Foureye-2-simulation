@@ -2031,8 +2031,8 @@ if __name__ == '__main__':
     marker_size = 10
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
-    # schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
-    schemes = ["DD-IPI", "DD-PI", "DD-Random"]
+    schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
+    # schemes = ["DD-IPI", "DD-PI", "DD-ML-PI", "DD-Random", "No-DD-IPI", "No-DD-PI"]
 
 
 

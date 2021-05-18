@@ -932,12 +932,8 @@ def run_sumulation_group_special(current_scheme, DD_using, uncertain_scheme_att,
     pickle.dump(all_result_after_each_game_all_result, the_file)
     the_file.close()
 
-def run_sumulation_group_ML_data_collect(simulation_time):
-    current_scheme = "ML_collect_data_PI"
+def run_sumulation_group_ML_data_collect(current_scheme, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
     DD_using = True
-    uncertain_scheme_att = False
-    uncertain_scheme_def = False
-    decision_scheme = 3
 
     ML_x_data_all_result = {}
     ML_y_data_all_result = {}
@@ -980,7 +976,7 @@ if __name__ == '__main__':
     # (current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time)
 
     # Static Vulnerability
-    # run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
+    run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
     # run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
     # run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
@@ -1013,7 +1009,8 @@ if __name__ == '__main__':
     # run_sumulation_group_3("DD-IPI_ML_data", True, True, False, 1, simulation_time)
 
     # Collect data for ML
-    run_sumulation_group_ML_data_collect(simulation_time)
+    # run_sumulation_group_ML_data_collect("ML_collect_data_PI", False, False, 3, simulation_time)
+    # run_sumulation_group_ML_data_collect("ML_collect_data_IPI", True, True, 3, simulation_time)
 
 
     # Save data for each setting

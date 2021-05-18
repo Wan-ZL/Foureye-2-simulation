@@ -46,7 +46,7 @@ class game_class:
         self.use_bundle = True  # Note: False means defender only use one strategy each game
         self.enable_IRS_recheck = False  # True means enable IRS rechecking
         self.enable_IRS_recover = False  # True means enable IRS recovery
-        self.new_attacker_probability = 0.5 #att_arr_prob  # 1  # 0 means only one attacker in game.
+        self.new_attacker_probability = att_arr_prob  # 1  # 0 means only one attacker in game.
         self.vary_name = vary_name  # vary_name and vary_value are used to locate ML model
         self.vary_value = vary_value
         self.DD_using = DD_using
@@ -132,7 +132,8 @@ class game_class:
         # select strategy bundle
         self.defender.choose_bundle(
             self.attacker_template.strategy_number, self.attacker_template.strat_cost,
-            attack_impact_per_strategy(self.attacker_list, self.attacker_template), self.vary_name, self.vary_value)
+            attack_impact_per_strategy(self.attacker_list, self.attacker_template), self.vary_name, self.vary_value,
+            get_overall_attacker_impact_per_game(self.attacker_list, self.attacker_template))
 
         self.defender.execute_strategy(get_network_list(self.attacker_list), get_detect_prob_list(self.attacker_list),
                                        self.graph,
@@ -363,7 +364,8 @@ class game_class:
 
         # update defender impact (done)
         self.defender.update_defense_impact(
-            attack_impact_per_strategy(self.attacker_list, self.attacker_template))
+            attack_impact_per_strategy(self.attacker_list, self.attacker_template),
+            get_strategy_list(self.attacker_list), self.strategy_number)
 
         # clean honeypot after each game
         if self.graph.using_honeynet:

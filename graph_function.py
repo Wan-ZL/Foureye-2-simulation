@@ -133,8 +133,11 @@ def update_vul(G):
                                        ) / (len(G.nodes[n]["software vulnerability"]) + len(
             G.nodes[n]["encryption vulnerability"]) +
                                             len(G.nodes[n]["unknown vulnerability"]))
-        G.nodes[n][
-            "normalized_vulnerability"] = G.nodes[n]["vulnerability"] / 10
+        # G.nodes[n]["normalized_vulnerability"] = G.nodes[n]["vulnerability"] / 10
+        max_soft = max(G.nodes[n]["software vulnerability"])
+        max_enpt = max(G.nodes[n]["encryption vulnerability"])
+        max_unkn = max(G.nodes[n]["unknown vulnerability"])
+        G.nodes[n]["normalized_vulnerability"] = max(max_soft, max_enpt, max_unkn)
 
         if type(G.nodes[n]["normalized_vulnerability"]) == list:
             if len(G.nodes[n]["normalized_vulnerability"]) > 1:
