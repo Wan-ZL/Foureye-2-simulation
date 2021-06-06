@@ -162,11 +162,13 @@ class game_class:
     def attacker_round(self, simulation_id):
         # random.shuffle(self.attacker_list)      # to avoid oder effect. Attackers execute in random order.
         for attacker in self.attacker_list:
-            if display:
-                print(f"attacker location{attacker.location}")
             if self.game_over:
                 print(f"Sim {simulation_id} GAME OVER")
                 return
+            if attacker.location is not None:
+                if not self.graph.network.has_node(attacker.location):
+                    print(f"attacker at  unexist node {attacker.location}")
+                    continue
 
             attacker.observe_opponent(
                 self.defender.chosen_strategy_list)
@@ -334,7 +336,9 @@ class game_class:
                 continue
 
             if attacker.location is not None:
-                if self.graph.network.nodes[attacker.location]["type"] == 3:  # if in honeypot
+                if not self.graph.network.has_node(attacker.location):
+                    self.evict_attacker(attacker)
+                elif self.graph.network.nodes[attacker.location]["type"] == 3:  # if in honeypot
                     print("attacker in honeypot")
                     self.evict_reason_history[0] += 1
                     self.evict_attacker(attacker)

@@ -556,13 +556,11 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
             else:  # when not consider uncertainty
                 the_file = open("data/trained_ML_model/trained_classi_model_ML_collect_data_PI.pkl", "rb")
         else:
-            raise Exception("No varying ML model yet")
             # varying settings
-            # if self.uncertain_scheme:  # when consider uncertianty
-            #     # print("using IPI")
-            #     the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-IPI.pkl", "rb")
-            # else:  # when not consider uncertainty
-            #     the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model_list/knn_trained_model_DD-PI.pkl", "rb")
+            if self.uncertain_scheme:  # when consider uncertianty
+                the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model/trained_classi_model_ML_collect_data_IPI.pkl", "rb")
+            else:  # when not consider uncertainty
+                the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model/trained_classi_model_ML_collect_data_PI.pkl", "rb")
 
         knn_model = pickle.load(the_file)
         the_file.close()
@@ -749,7 +747,7 @@ class defender_class:
         self.observed_CKC_count = np.zeros(self.CKC_number)     # add for teset
         self.key_time = 1
         self.monit_time = 1
-        #         self.impact_record = 1 - attack_impact_record
+
         self.belief_context = [1 / (CKC_number + 1)] * (CKC_number + 1)
         #         self.obs_oppo_strat_history = np.zeros(
         #             (CKC_number + 1, self.strategy_number))
@@ -795,7 +793,7 @@ class defender_class:
         strat_prob = np.array(strat_count)/sum(strat_count)
         for strategy_id in self.chosen_strategy_list:
             self.impact_record[strategy_id] = sum([strat_prob[stra] * math.exp(-1 * xi * all_attack_impact[stra]) for stra in np.arange(strat_number)])
-            # self.impact_record[strategy_id] = math.exp(-1 * xi * sum(all_attack_impact))  # di
+            # self.impact_record[strategy_id] = math.exp(-1 * xi * sum(all_attack_impact))  # old function
 
 
 # In[ ]:

@@ -133,7 +133,7 @@ def update_vul(G):
                                        ) / (len(G.nodes[n]["software vulnerability"]) + len(
             G.nodes[n]["encryption vulnerability"]) +
                                             len(G.nodes[n]["unknown vulnerability"]))
-        # G.nodes[n]["normalized_vulnerability"] = G.nodes[n]["vulnerability"] / 10
+        # G.nodes[n]["normalized_vulnerability"] = G.nodes[n]["vulnerability"] / 10 # old function
         max_soft = max(G.nodes[n]["software vulnerability"])
         max_enpt = max(G.nodes[n]["encryption vulnerability"])
         max_unkn = max(G.nodes[n]["unknown vulnerability"])
@@ -275,7 +275,6 @@ def set_recover_time(G):
 # reachability
 # isolated node have betweenness value 0.0
 def set_reachability(G):
-
     if not nx.get_node_attributes(G, "reachability"):
         nx.set_node_attributes(G, 0, "reachability")
     # reachability = nx.betweenness_centrality(G)

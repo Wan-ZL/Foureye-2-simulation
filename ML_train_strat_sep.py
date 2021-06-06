@@ -233,8 +233,6 @@ def array_normalization(_2d_array):
     #         sum_array = np.append(sum_array, sum(array))
     return sum_array
 
-
-
 def display_prediction_result(schemes, strategy_number):
     figure_high = 6
     figure_width = 7.5
@@ -289,11 +287,8 @@ def display_prediction_result(schemes, strategy_number):
 
 def train_ML_predict_action(schemes, x_length, n_neighbors, strategy_number):
     for schemes_index in range(len(schemes)):
-        # all_dataset_X = np.zeros((1, x_length))
-        # all_dataset_Y = np.zeros((1, 1))
         all_dataset_X = []
         all_dataset_Y = []
-        original_belief = np.zeros((1, strategy_number))
         path = "data/trainning_data/" + schemes[schemes_index]
         file_list = [f for f in os.listdir(path) if not f.startswith('.')]
         if len(file_list) == 0:
@@ -311,11 +306,6 @@ def train_ML_predict_action(schemes, x_length, n_neighbors, strategy_number):
                     all_dataset_X.append(dataset_x)
                 for dataset_y in ML_y_data_all_result[key]:
                     all_dataset_Y.append(dataset_y)
-
-                # all_dataset_X.append(ML_x_data_all_result[key])
-                # all_dataset_Y.append(ML_y_data_all_result[key])
-                # all_dataset_X = np.concatenate((all_dataset_X, ML_x_data_all_result[key]), axis=0)
-                # all_dataset_Y = np.concatenate((all_dataset_Y, ML_y_data_all_result[key]), axis=0)
 
         # print(np.sum(np.array(all_dataset_Y) == 0)/len(all_dataset_Y))
         # print(np.sum(np.array(all_dataset_Y) == 5) / len(all_dataset_Y))
@@ -336,16 +326,12 @@ def train_ML_predict_action(schemes, x_length, n_neighbors, strategy_number):
         # model = neighbors.KNeighborsClassifier(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
         # model = neighbors.KNeighborsClassifier().fit(X_train, y_train)
         model = tree.DecisionTreeClassifier().fit(X_train, y_train)
-        # model = svm.SVC().fit(X_train, y_train)
-        # model = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes = (5, 2), random_state = 1).fit(X_train, y_train)
 
         y_predict = model.predict(X_test)
         R2_predict = r2_score(y_test, y_predict)
         print(f"R2_predict {R2_predict}")
-
         MSE_predict = mean_squared_error(y_test, y_predict)
         print(f"MSE_predict {MSE_predict}")
-
 
         # save trained model
         os.makedirs("data/trained_ML_model", exist_ok=True)
@@ -353,6 +339,93 @@ def train_ML_predict_action(schemes, x_length, n_neighbors, strategy_number):
         pickle.dump(model, the_file)
         the_file.close()
 
+def train_ML_predict_action_vary_AAP(schemes, x_length, n_neighbors, strategy_number):
+    AAP_list = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+
+    for AAP in AAP_list:
+        print(f"AAP={AAP}")
+        for schemes_index in range(len(schemes)):
+            all_dataset_X = []
+            all_dataset_Y = []
+            path = "data_vary/AAP=" + str(AAP) + "/trainning_data/" + schemes[schemes_index]
+            file_list = [f for f in os.listdir(path) if not f.startswith('.')]
+            if len(file_list) == 0:
+                print("!! "+schemes[schemes_index]+" No File")
+                continue
+            for file_name in file_list:
+                print("data_vary/AAP=" + str(AAP) + "/trainning_data/" + schemes[schemes_index] + "/"+file_name)
+                the_file = open("data_vary/AAP=" + str(AAP) + "/trainning_data/" + schemes[schemes_index] + "/"+file_name, "rb")
+                [ML_x_data_all_result, ML_y_data_all_result] = pickle.load(the_file)
+                the_file.close()
+
+
+                for key in ML_x_data_all_result.keys():
+                    for dataset_x in ML_x_data_all_result[key]:
+                        all_dataset_X.append(dataset_x)
+                    for dataset_y in ML_y_data_all_result[key]:
+                        all_dataset_Y.append(dataset_y)
+
+            X_train, X_test, y_train, y_test = train_test_split(all_dataset_X, all_dataset_Y,
+                                                                test_size=0.1, random_state=1)
+
+            # model = neighbors.KNeighborsClassifier(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
+            model = tree.DecisionTreeClassifier().fit(X_train, y_train)
+
+            y_predict = model.predict(X_test)
+            R2_predict = r2_score(y_test, y_predict)
+            print(f"R2_predict {R2_predict}")
+            MSE_predict = mean_squared_error(y_test, y_predict)
+            print(f"MSE_predict {MSE_predict}")
+
+            # save trained model
+            os.makedirs("data_vary/AAP=" + str(AAP) + "/trained_ML_model", exist_ok=True)
+            the_file = open("data_vary/AAP=" + str(AAP) + "/trained_ML_model/trained_classi_model_"+schemes[schemes_index]+".pkl", "wb+")
+            pickle.dump(model, the_file)
+            the_file.close()
+
+def train_ML_predict_action_vary_VUB(schemes, x_length, n_neighbors, strategy_number):
+    VUB_list = np.array(range(1, 5 + 1)) * 2
+
+    for VUB in VUB_list:
+        print(f"VUB={VUB}")
+        for schemes_index in range(len(schemes)):
+            all_dataset_X = []
+            all_dataset_Y = []
+            path = "data_vary/VUB=" + str(VUB) + "/trainning_data/" + schemes[schemes_index]
+            file_list = [f for f in os.listdir(path) if not f.startswith('.')]
+            if len(file_list) == 0:
+                print("!! "+schemes[schemes_index]+" No File")
+                continue
+            for file_name in file_list:
+                print("data_vary/VUB=" + str(VUB) + "/trainning_data/" + schemes[schemes_index] + "/"+file_name)
+                the_file = open("data_vary/VUB=" + str(VUB) + "/trainning_data/" + schemes[schemes_index] + "/"+file_name, "rb")
+                [ML_x_data_all_result, ML_y_data_all_result] = pickle.load(the_file)
+                the_file.close()
+
+
+                for key in ML_x_data_all_result.keys():
+                    for dataset_x in ML_x_data_all_result[key]:
+                        all_dataset_X.append(dataset_x)
+                    for dataset_y in ML_y_data_all_result[key]:
+                        all_dataset_Y.append(dataset_y)
+
+            X_train, X_test, y_train, y_test = train_test_split(all_dataset_X, all_dataset_Y,
+                                                                test_size=0.1, random_state=1)
+
+            # model = neighbors.KNeighborsClassifier(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
+            model = tree.DecisionTreeClassifier().fit(X_train, y_train)
+
+            y_predict = model.predict(X_test)
+            R2_predict = r2_score(y_test, y_predict)
+            print(f"R2_predict {R2_predict}")
+            MSE_predict = mean_squared_error(y_test, y_predict)
+            print(f"MSE_predict {MSE_predict}")
+
+            # save trained model
+            os.makedirs("data_vary/VUB=" + str(VUB) + "/trained_ML_model", exist_ok=True)
+            the_file = open("data_vary/VUB=" + str(VUB) + "/trained_ML_model/trained_classi_model_"+schemes[schemes_index]+".pkl", "wb+")
+            pickle.dump(model, the_file)
+            the_file.close()
 
 
 if __name__ == '__main__':
@@ -366,8 +439,11 @@ if __name__ == '__main__':
     # display_prediction_result(schemes, strategy_number)
     x_length = 47
 
+    # ML predict action
     classi_schemes = ["ML_collect_data_PI", "ML_collect_data_IPI"]
-    train_ML_predict_action(classi_schemes, x_length, n_neighbors, strategy_number)
+    # train_ML_predict_action(classi_schemes, x_length, n_neighbors, strategy_number)
+    # train_ML_predict_action_vary_AAP(classi_schemes, x_length, n_neighbors, strategy_number)
+    train_ML_predict_action_vary_VUB(classi_schemes, x_length, n_neighbors, strategy_number)
     print('The scikit-learn version is {}.'.format(sklearn.__version__))
 
 

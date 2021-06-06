@@ -289,12 +289,13 @@ def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
 
     for node_id in collection_list:
     # for node_id in G_real.nodes():      # test, original: above one
-        if not G_real.nodes[node_id]["evicted_mark"]:
-            # if attacker detect deception, use real network
-            if random.random() < attack_detect_prob:
-                attacker_adjacent += graph_function.adjacent_node(G_real, node_id)
-            else:
-                attacker_adjacent += graph_function.adjacent_node(G_att, node_id)
+        if G_real.has_node(node_id):
+            if not G_real.nodes[node_id]["evicted_mark"]:
+                # if attacker detect deception, use real network
+                if random.random() < attack_detect_prob:
+                    attacker_adjacent += graph_function.adjacent_node(G_real, node_id)
+                else:
+                    attacker_adjacent += graph_function.adjacent_node(G_att, node_id)
 
     attacker_adjacent = list(set(attacker_adjacent))
     # print(attacker_adjacent)
@@ -871,7 +872,6 @@ def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, c
     attack_result = {"attack_cost": 0, "ids": []}
 
     if self.chosen_strategy == 0:
-
         attack_result = attack_AS_1(G_real, self.network, G_def,
                                     self.collection_list, self.monit_time, self.detect_prob)
         if attack_result["ids"]:

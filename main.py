@@ -63,8 +63,7 @@ def game_start(simulation_id=1,
                 if game.graph.network.nodes[node_id]["compromised_status"]:
                     vulnerability_set_of_compromised_node.append(
                         game.graph.network.nodes[node_id]["vulnerability"])
-            print("Sorted vulnerability of Compromised Nodes:")
-            print(sorted(vulnerability_set_of_compromised_node))
+            print(f"Sorted vulnerability of Compromised Nodes: {sorted(vulnerability_set_of_compromised_node)}")
 
 
         # print(np.mean(list(nx.get_node_attributes(game.graph.network, "normalized_vulnerability").values())))
@@ -372,7 +371,7 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme_att, uncer
     the_file.close()
 
 
-def run_sumulation_group_2(current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
+def run_sumulation_group_vary_VUB(current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
     vul_range = {}
     MTTSF_all_result = {}
     att_cost_all_result = {}
@@ -456,52 +455,51 @@ def run_sumulation_group_2(current_scheme, DD_using, uncertain_scheme_att, uncer
 
 
     # SAVE to FILE (need to create directory manually)
-    os.makedirs("data/" + current_scheme + "/varying", exist_ok=True)
+    os.makedirs("data/" + current_scheme + "/varying_VUB", exist_ok=True)
     # Vul range
-    the_file = open("data/" + current_scheme + "/varying/Vul_Range.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/Vul_Range.pkl", "wb+")
     pickle.dump(vul_range, the_file)
     the_file.close()
     # MTTSF
-    the_file = open("data/" + current_scheme + "/varying/MTTSF.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/MTTSF.pkl", "wb+")
     pickle.dump(MTTSF_all_result, the_file)
     the_file.close()
 
     # Cost
-    the_file = open("data/" + current_scheme + "/varying/att_cost.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/att_cost.pkl", "wb+")
     pickle.dump(att_cost_all_result, the_file)
     the_file.close()
-    the_file = open("data/" + current_scheme + "/varying/def_cost.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/def_cost.pkl", "wb+")
     pickle.dump(def_cost_all_result, the_file)
     the_file.close()
 
     # HEU
-    the_file = open("data/" + current_scheme + "/varying/att_HEU.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/att_HEU.pkl", "wb+")
     pickle.dump(att_HEU_all_result, the_file)
     the_file.close()
-    the_file = open("data/" + current_scheme + "/varying/def_HEU.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/def_HEU.pkl", "wb+")
     pickle.dump(def_HEU_all_result, the_file)
     the_file.close()
 
     # Uncertainty
-    the_file = open("data/" + current_scheme + "/varying/att_uncertainty.pkl",
+    the_file = open("data/" + current_scheme + "/varying_VUB/att_uncertainty.pkl",
                     "wb+")
     pickle.dump(att_uncertainty_all_result, the_file)
     the_file.close()
-    the_file = open("data/" + current_scheme + "/varying/def_uncertainty.pkl",
+    the_file = open("data/" + current_scheme + "/varying_VUB/def_uncertainty.pkl",
                     "wb+")
     pickle.dump(def_uncertainty_all_result, the_file)
     the_file.close()
 
     # FPR & TPR
-    the_file = open("data/" + current_scheme + "/varying/FPR.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/FPR.pkl", "wb+")
     pickle.dump(FPR_all_result, the_file)
     the_file.close()
-    the_file = open("data/" + current_scheme + "/varying/TPR.pkl", "wb+")
+    the_file = open("data/" + current_scheme + "/varying_VUB/TPR.pkl", "wb+")
     pickle.dump(TPR_all_result, the_file)
     the_file.close()
 
-
-def run_sumulation_group_3(current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
+def run_sumulation_group_vary_AAP(current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
     vul_range = {}
     MTTSF_all_result = {}
     att_cost_all_result = {}
@@ -516,7 +514,7 @@ def run_sumulation_group_3(current_scheme, DD_using, uncertain_scheme_att, uncer
     def_strategy_all_result = {}
 
     att_arr_prob = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
-
+    vary_name = "AAP"
 
     results = []
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -525,7 +523,7 @@ def run_sumulation_group_3(current_scheme, DD_using, uncertain_scheme_att, uncer
             for i in range(simulation_time):
                 future = executor.submit(
                     game_start, i, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, current_scheme,
-                    att_arr_prob = att_arr_prob[vul_index])  # scheme change here
+                    att_arr_prob = att_arr_prob[vul_index], vary_name=vary_name, vary_value=att_arr_prob[vul_index])  # scheme change here
                 particular_vul_result.append(future)
             results.append(particular_vul_result)
 
@@ -964,7 +962,79 @@ def run_sumulation_group_ML_data_collect(current_scheme, uncertain_scheme_att, u
     pickle.dump([ML_x_data_all_result, ML_y_data_all_result], the_file)
     the_file.close()
 
+def run_sumulation_group_ML_data_collect_vary_AAP(current_scheme, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
+    DD_using = True
+    AAP_list = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+    vary_name = "AAP"
 
+    for AAP in AAP_list:
+        ML_x_data_all_result = {}
+        ML_y_data_all_result = {}
+
+        results = []
+
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for i in range(simulation_time):
+                future = executor.submit(game_start, i, DD_using,
+                                         uncertain_scheme_att, uncertain_scheme_def, decision_scheme, current_scheme, att_arr_prob = AAP,
+                                         vary_name=vary_name, vary_value = AAP)  # scheme change here
+                results.append(future)
+
+            index = 0
+
+            for future in results:
+                ML_x_data_all_result[index] = future.result().ML_x_data
+                ML_y_data_all_result[index] = future.result().ML_y_data
+
+                index += 1
+
+        # SAVE to FILE
+        # training and target data for ML model
+        os.makedirs("data_vary/AAP=" + str(AAP) + "/trainning_data/" + current_scheme, exist_ok=True)
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M")
+        the_file = open("data_vary/AAP=" + str(AAP) + "/trainning_data/" + current_scheme + "/all_result_after_each_game_" + dt_string + ".pkl",
+                        "wb+")
+        pickle.dump([ML_x_data_all_result, ML_y_data_all_result], the_file)
+        the_file.close()
+
+def run_sumulation_group_ML_data_collect_vary_VUB(current_scheme, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time):
+    DD_using = True
+    VUB_list = np.array(range(1, 5 + 1)) * 2
+    vary_name = "VUB"
+
+    for VUB in VUB_list:
+        ML_x_data_all_result = {}
+        ML_y_data_all_result = {}
+
+        results = []
+
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for i in range(simulation_time):
+                future = executor.submit(game_start, i, DD_using,
+                                         uncertain_scheme_att, uncertain_scheme_def, decision_scheme,
+                                         current_scheme, att_arr_prob=VUB,
+                                         vary_name=vary_name, vary_value=VUB)  # scheme change here
+                results.append(future)
+
+            index = 0
+
+            for future in results:
+                ML_x_data_all_result[index] = future.result().ML_x_data
+                ML_y_data_all_result[index] = future.result().ML_y_data
+
+                index += 1
+
+        # SAVE to FILE
+        # training and target data for ML model
+        os.makedirs("data_vary/VUB=" + str(VUB) + "/trainning_data/" + current_scheme, exist_ok=True)
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M")
+        the_file = open("data_vary/VUB=" + str(
+            VUB) + "/trainning_data/" + current_scheme + "/all_result_after_each_game_" + dt_string + ".pkl",
+                        "wb+")
+        pickle.dump([ML_x_data_all_result, ML_y_data_all_result], the_file)
+        the_file.close()
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -977,42 +1047,47 @@ if __name__ == '__main__':
 
     # Static Vulnerability
     run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
-    # run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
-    # run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
-    # run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
-    # run_sumulation_group_1("No-DD-IPI", False, True, True, 1, simulation_time)
-    # run_sumulation_group_1("DD-PI", True, False, False, 1, simulation_time)
-    # run_sumulation_group_1("DD-ML-PI", True, False, False, 2, simulation_time)
-    # run_sumulation_group_1("No-DD-PI", False, False, False, 1, simulation_time)
+    run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
+    run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
+    run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
+    run_sumulation_group_1("No-DD-IPI", False, True, True, 1, simulation_time)
+    run_sumulation_group_1("DD-PI", True, False, False, 1, simulation_time)
+    run_sumulation_group_1("DD-ML-PI", True, False, False, 2, simulation_time)
+    run_sumulation_group_1("No-DD-PI", False, False, False, 1, simulation_time)
     # run_sumulation_group_1("DD-IPI_ML_data", True, True, False, 1, simulation_time)
 
-    # Varying Vulnerability
-    # run_sumulation_group_2("DD-Random", True, True, True, 0, simulation_time)
-    # run_sumulation_group_2("No-DD-Random", False, True, True, 0, simulation_time)
-    # run_sumulation_group_2("DD-IPI", True, True, True, 1, simulation_time)
-    # run_sumulation_group_2("DD-ML-IPI", True, True, True, 2, simulation_time)
-    # run_sumulation_group_2("No-DD-IPI", False, True, True, 1, simulation_time)
-    # run_sumulation_group_2("DD-PI", True, False, False, 1, simulation_time)
-    # run_sumulation_group_2("DD-ML-PI", True, False, False, 2, simulation_time)
-    # run_sumulation_group_2("No-DD-PI", False, False, False, 1, simulation_time)
-    # run_sumulation_group_2("DD-IPI_ML_data", True, True, False, 1, simulation_time)
+    # Varying Vulnerability Upper Bound (VUB)
+    # run_sumulation_group_vary_VUB("DD-Random", True, True, True, 0, simulation_time)
+    # run_sumulation_group_vary_VUB("No-DD-Random", False, True, True, 0, simulation_time)
+    # run_sumulation_group_vary_VUB("DD-IPI", True, True, True, 1, simulation_time)
+    # run_sumulation_group_vary_VUB("DD-ML-IPI", True, True, True, 2, simulation_time)
+    # run_sumulation_group_vary_VUB("No-DD-IPI", False, True, True, 1, simulation_time)
+    # run_sumulation_group_vary_VUB("DD-PI", True, False, False, 1, simulation_time)
+    # run_sumulation_group_vary_VUB("DD-ML-PI", True, False, False, 2, simulation_time)
+    # run_sumulation_group_vary_VUB("No-DD-PI", False, False, False, 1, simulation_time)
+    # run_sumulation_group_vary_VUB("DD-IPI_ML_data", True, True, False, 1, simulation_time)
 
     # Varying Attacker Arrival Probability (AAP)
-    # run_sumulation_group_3("DD-Random", True, True, True, 0, simulation_time)
-    # run_sumulation_group_3("No-DD-Random", False, True, True, 0, simulation_time)
-    # run_sumulation_group_3("DD-IPI", True, True, True, 1, simulation_time)
-    # run_sumulation_group_3("DD-ML-IPI", True, True, True, 2, simulation_time)
-    # run_sumulation_group_3("No-DD-IPI", False, True, True, 1, simulation_time)
-    # run_sumulation_group_3("DD-PI", True, False, False, 1, simulation_time)
-    # run_sumulation_group_3("DD-ML-PI", True, False, False, 2, simulation_time)
-    # run_sumulation_group_3("No-DD-PI", False, False, False, 1, simulation_time)
-    # run_sumulation_group_3("DD-IPI_ML_data", True, True, False, 1, simulation_time)
+    # run_sumulation_group_vary_AAP("DD-Random", True, True, True, 0, simulation_time)
+    # run_sumulation_group_vary_AAP("No-DD-Random", False, True, True, 0, simulation_time)
+    # run_sumulation_group_vary_AAP("DD-IPI", True, True, True, 1, simulation_time)
+    # run_sumulation_group_vary_AAP("DD-ML-IPI", True, True, True, 2, simulation_time)
+    # run_sumulation_group_vary_AAP("No-DD-IPI", False, True, True, 1, simulation_time)
+    # run_sumulation_group_vary_AAP("DD-PI", True, False, False, 1, simulation_time)
+    # run_sumulation_group_vary_AAP("DD-ML-PI", True, False, False, 2, simulation_time)
+    # run_sumulation_group_vary_AAP("No-DD-PI", False, False, False, 1, simulation_time)
+    # run_sumulation_group_vary_AAP("DD-IPI_ML_data", True, True, False, 1, simulation_time)
 
     # Collect data for ML
     # run_sumulation_group_ML_data_collect("ML_collect_data_PI", False, False, 3, simulation_time)
     # run_sumulation_group_ML_data_collect("ML_collect_data_IPI", True, True, 3, simulation_time)
+    # run_sumulation_group_ML_data_collect_vary_AAP("ML_collect_data_PI", False, False, 3, simulation_time)
+    # run_sumulation_group_ML_data_collect_vary_AAP("ML_collect_data_IPI", True, True, 3, simulation_time)
+    # run_sumulation_group_ML_data_collect_vary_VUB("ML_collect_data_PI", False, False, 3, simulation_time)
+    # run_sumulation_group_ML_data_collect_vary_VUB("ML_collect_data_IPI", True, True, 3, simulation_time)
 
 
+# ============================================================
     # Save data for each setting
     AAP_list = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
     VUB_list = np.array(range(1, 5 + 1)) * 2

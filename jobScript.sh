@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --ntasks=32
-#SBATCH -t 00-03:00:00
+#SBATCH -t 00-02:00:00
 #SBATCH -p dev_q
 
 

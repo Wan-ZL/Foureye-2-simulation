@@ -1155,7 +1155,7 @@ def display_average_TPR():
     plt.show()
 
 def display_TPR():
-    plt.figure(figsize=(figure_width, figure_high + 0.75))
+    plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R4/TPR.pkl", "rb")
         TPR_history = pickle.load(the_file)
@@ -1334,12 +1334,12 @@ def display_cost():
     plt.show()
 
 
-def display_MTTSF_varying():
+def display_MTTSF_varying_VUB():
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/MTTSF.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/MTTSF.pkl", "rb")
         MTTSF = pickle.load(the_file)
 
         y_axis = np.zeros(len(MTTSF))
@@ -1361,19 +1361,19 @@ def display_MTTSF_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("MTTSF", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/MTTSF.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/MTTSF.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/MTTSF.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/MTTSF.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/MTTSF.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/MTTSF.png", dpi=figure_dpi)
     plt.show()
 
-def display_cost_varying():
+def display_cost_varying_VUB():
     # attacker cost
     plt.figure(figsize=(figure_width, figure_high + 0.75))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/att_cost.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/att_cost.pkl", "rb")
         att_cost = pickle.load(the_file)
         the_file.close()
 
@@ -1404,19 +1404,19 @@ def display_cost_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("Attack Cost", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/att_cost.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/att_cost.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/att_cost.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/att_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/att_cost.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/att_cost.png", dpi=figure_dpi)
     plt.show()
 
 
     # defender cost
     plt.figure(figsize=(figure_width, figure_high + 0.75))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/def_cost.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/def_cost.pkl", "rb")
         def_cost = pickle.load(the_file)
         the_file.close()
 
@@ -1447,19 +1447,19 @@ def display_cost_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("Defense Cost", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/def_cost.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/def_cost.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/def_cost.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/def_cost.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/def_cost.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/def_cost.png", dpi=figure_dpi)
     plt.show()
 
-def display_HEU_varying():
+def display_HEU_varying_VUB():
     # AHEU
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/att_HEU.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/att_HEU.pkl", "rb")
         att_HEU = pickle.load(the_file)
         the_file.close()
 
@@ -1485,18 +1485,18 @@ def display_HEU_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("AHEU", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/AHEU.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/AHEU.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/AHEU.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/AHEU.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/AHEU.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/AHEU.png", dpi=figure_dpi)
     plt.show()
 
     # DHEU
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/def_HEU.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/def_HEU.pkl", "rb")
         def_HEU = pickle.load(the_file)
         the_file.close()
 
@@ -1522,19 +1522,19 @@ def display_HEU_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("DHEU", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/DHEU.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/DHEU.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/DHEU.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/DHEU.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/DHEU.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/DHEU.png", dpi=figure_dpi)
     plt.show()
 
-def display_uncertainty_varying():
+def display_uncertainty_varying_VUB():
     # attacker uncertainty
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/att_uncertainty.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/att_uncertainty.pkl", "rb")
         att_uncertain = pickle.load(the_file)
         the_file.close()
 
@@ -1560,18 +1560,18 @@ def display_uncertainty_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("Attacker Uncertainty", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/att_uncertain.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/att_uncertain.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/att_uncertain.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/att_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/att_uncertain.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/att_uncertain.png", dpi=figure_dpi)
     plt.show()
 
     # Defender Uncertainty
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/def_uncertainty.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/def_uncertainty.pkl", "rb")
         def_uncertain = pickle.load(the_file)
         the_file.close()
 
@@ -1596,18 +1596,18 @@ def display_uncertainty_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("Defender Uncertainty", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/def_uncertain.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/def_uncertain.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/def_uncertain.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/def_uncertain.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/def_uncertain.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/def_uncertain.png", dpi=figure_dpi)
     plt.show()
 
-def display_FPR_varying():
+def display_FPR_varying_VUB():
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/FPR.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/FPR.pkl", "rb")
         FPR = pickle.load(the_file)
         the_file.close()
 
@@ -1632,18 +1632,18 @@ def display_FPR_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("FPR", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/FPR.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/FPR.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/FPR.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/FPR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/FPR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/FPR.png", dpi=figure_dpi)
     plt.show()
 
-def display_TPR_varying():
+def display_TPR_varying_VUB():
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
-        the_file = open("data/" + schemes[schemes_index] + "/varying/Vul_Range.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/Vul_Range.pkl", "rb")
         varying_range = pickle.load(the_file)
-        the_file = open("data/" + schemes[schemes_index] + "/varying/TPR.pkl", "rb")
+        the_file = open("data/" + schemes[schemes_index] + "/varying_VUB/TPR.pkl", "rb")
         TPR = pickle.load(the_file)
         the_file.close()
 
@@ -1668,10 +1668,10 @@ def display_TPR_varying():
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
     plt.ylabel("TPR", fontsize=font_size)
     plt.tight_layout()
-    os.makedirs("Figure/All-In-One/varying", exist_ok=True)
-    plt.savefig("Figure/All-In-One/varying/TPR.svg", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/TPR.eps", dpi=figure_dpi)
-    plt.savefig("Figure/All-In-One/varying/TPR.png", dpi=figure_dpi)
+    os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_VUB/TPR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/TPR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_VUB/TPR.png", dpi=figure_dpi)
     plt.show()
 
 
@@ -2032,7 +2032,7 @@ if __name__ == '__main__':
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
     schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
-    # schemes = ["DD-IPI", "DD-PI", "DD-ML-PI", "DD-Random", "No-DD-IPI", "No-DD-PI"]
+    # schemes = ["DD-IPI", "DD-PI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
 
 
 
@@ -2051,26 +2051,27 @@ if __name__ == '__main__':
     # display_impact()
     # display_strategy_prob_distribution()
     #
-    # display_uncertainty()
-    # display_average_uncertainty()
-    # display_HEU_In_One()
-    # display_average_HEU_In_One()
-    # display_SysFail_in_one()
+    display_uncertainty()
+    display_average_uncertainty()
+    display_HEU_In_One()
+    display_average_HEU_In_One()
+    display_SysFail_in_one()
     display_TTSF_in_one_bar()
-    # display_inside_attacker_in_one()
-    # display_strategy_prob_distribution_in_one()
-    # display_average_TPR()
-    # display_TPR()
-    # display_average_cost()
-    # display_cost()
+    display_inside_attacker_in_one()
+    display_strategy_prob_distribution_in_one()
+    display_average_TPR()
+    display_TPR()
+    display_average_cost()
+    display_cost()
 
-    # display_MTTSF_varying()
-    # display_cost_varying()
-    # display_HEU_varying()
-    # display_uncertainty_varying()
-    # display_FPR_varying()
-    # display_TPR_varying()
 
+    # display_MTTSF_varying_VUB()
+    # display_cost_varying_VUB()
+    # display_HEU_varying_VUB()
+    # display_uncertainty_varying_VUB()
+    # display_FPR_varying_VUB()
+    # display_TPR_varying_VUB()
+    #
     # display_MTTSF_varying_AAP()
     # display_cost_varying_AAP()
     # display_HEU_varying_AAP()
