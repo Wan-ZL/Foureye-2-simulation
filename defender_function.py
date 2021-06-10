@@ -42,7 +42,7 @@ def def_strategy_cost(strategy_number):
 # In[31]:
 
 
-def defender_uncertainty_update(att_detect, def_monit_time, def_strategy_number, uncertain_scheme, decision_scheme):
+def defender_uncertainty_update(att_detect, def_monit_time, uncertain_scheme, decision_scheme):
     mu = 10  # was 1
 
     uncertainty = 1 - math.exp((-mu) * att_detect / def_monit_time)
@@ -437,7 +437,7 @@ def defender_class_create_bundle(self, DD_using):
 # In[42]:
 
 
-def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, attack_impact_record, vary_name, vary_value, att_overall_impact):
+def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, attack_impact_record, vary_name, vary_value, att_overall_impact, attacker_list):
     S_j = np.ones(self.strategy_number) / self.strategy_number  # make sure the sum of S_j is 1
     c_kj = _2darray_normalization(self.observed_strategy_count)
     p_k = array_normalization(self.observed_CKC_count)
@@ -501,10 +501,6 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
                           attack_cost_record[j] / 3) - (
                                  self.strat_cost[i] / 3 + attack_impact_record[j])
 
-    # normalization range
-    a = 1
-    b = 9
-
     # eq. 8
     EU_C = np.zeros(self.strategy_number)
     for i in range(self.strategy_number):
@@ -521,27 +517,34 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
 
     HEU = EU_C
 
+    # ================ above is useless ================
+    DHEU = np.zeros(self.strategy_number)
+    for attacker in attacker_list:
+        DHEU += attacker.defender_HEU
 
+    # normalization range
+    a = 1
+    b = 9
     # Min-Max Normalization
-    if (max(HEU) - min(HEU)) != 0:
-        HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
+    if (max(DHEU) - min(DHEU)) != 0:
+        DHEU = a + (DHEU - min(DHEU)) * (b - a) / (max(DHEU) - min(DHEU))
     else:
-        HEU = np.ones(self.strategy_number) * a
-    self.HEU = HEU  # uncertainty case doesn't consider as real HEU
+        DHEU = np.ones(self.strategy_number) * a
+    self.DHEU = DHEU  # uncertainty case doesn't consider as real DHEU
 
-    bundle_HEU = []
+    bundle_DHEU = []
     bundle_lambda = 2
 
     for bundle in self.optional_bundle_list:
         C_DHEU_value = 0
         for strategy_id in bundle:
-            C_DHEU_value += HEU[strategy_id]
-        C_DHEU_value = C_DHEU_value * math.exp(-bundle_lambda * len(bundle))
-        bundle_HEU.append(C_DHEU_value)
+            C_DHEU_value += DHEU[strategy_id]
+        # C_DHEU_value = C_DHEU_value * math.exp(-bundle_lambda * len(bundle))
+        bundle_DHEU.append(C_DHEU_value)
 
     if random.random() < self.uncertainty:
         # uncertain level
-        bundle_HEU = np.zeros(len(self.optional_bundle_list))
+        bundle_DHEU = np.zeros(len(self.optional_bundle_list))
 
     # save for training ML model
     self.S_j = S_j
@@ -575,17 +578,15 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
         data_x = np.concatenate((data_x, self.att_previous_CKC))
         y_pred = knn_model.predict(data_x.reshape(1, -1))
         self.chosen_strategy_list = y_pred
-
-
     else:
         # Selection Scheme
         if self.decision_scheme == 0 or self.decision_scheme == 3:  # for random selection scheme
             self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
-        elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
-            if sum(bundle_HEU) == 0:  # fix python 3.5 error
+        elif self.decision_scheme == 1 or self.decision_scheme == 2:  # DHEU-based selection scheme
+            if sum(bundle_DHEU) == 0:  # fix python 3.5 error
                 self.chosen_strategy_list = random.choices(self.optional_bundle_list)[0]
             else:
-                self.chosen_strategy_list = random.choices(self.optional_bundle_list, weights=bundle_HEU)[0]
+                self.chosen_strategy_list = random.choices(self.optional_bundle_list, weights=bundle_DHEU)[0]
         else:
             raise Exception("Error: Unknown decision_scheme")
 
@@ -664,7 +665,7 @@ class defender_class:
         self.cost_limit = 3 # was 5
         self.strat_cost = def_strategy_cost(self.strategy_number)
         self.impact_record = np.ones(self.strategy_number)
-
+        self.expected_impact = np.ones(self.strategy_number)
         #         self.strat_option = create_bundle(CKC_list, self.strategy_number, game.DD_using, self.strat_cost, self.cost_limit) # Table 4
         #         self.optional_bundle_list = defender_class_create_bundle(game.DD_using)
         self.optional_bundle_list = []  # spare bundles
@@ -688,7 +689,7 @@ class defender_class:
                 self.uncertainty = 0
 
 
-        self.HEU = np.zeros(self.strategy_number)
+        self.DHEU = np.zeros(self.strategy_number)
         self.EU_C = None
         self.EU_CMS = None
         self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))
@@ -732,15 +733,26 @@ class defender_class:
 
 
 
-    def update_attribute(self, att_detect):
+    def update_attribute(self, attacker_list):
         # key_time
         self.key_time += 1
         # monitor time
-        self.monit_time += 1
+        if attacker_list:
+            self.monit_time = np.sum([attacker.defender_monit_time for attacker in attacker_list])
+        else:
+            self.monit_time = 0
         # uncertainty
-        self.uncertainty = defender_uncertainty_update(att_detect, self.monit_time,
-                                                       self.strategy_number,
-                                                       self.uncertain_scheme, self.decision_scheme)
+        # self.uncertainty = defender_uncertainty_update(att_detect, self.monit_time,
+        #                                                self.uncertain_scheme, self.decision_scheme)
+        uncertain_sum = 0
+        counter = 0
+        for attacker in attacker_list:
+            uncertain_sum += attacker.defender_uncertainty
+            counter += 1
+        if uncertain_sum == 0:
+            self.uncertainty = 0
+        else:
+            self.uncertainty = uncertain_sum/counter
 
     def reset_attribute(self, CKC_number):
         self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))    # add for test

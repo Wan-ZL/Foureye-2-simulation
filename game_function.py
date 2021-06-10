@@ -133,7 +133,7 @@ class game_class:
         self.defender.choose_bundle(
             self.attacker_template.strategy_number, self.attacker_template.strat_cost,
             attack_impact_per_strategy(self.attacker_list, self.attacker_template), self.vary_name, self.vary_value,
-            get_overall_attacker_impact_per_game(self.attacker_list, self.attacker_template))
+            get_overall_attacker_impact_per_game(self.attacker_list, self.attacker_template), self.attacker_list)
 
         self.defender.execute_strategy(get_network_list(self.attacker_list), get_detect_prob_list(self.attacker_list),
                                        self.graph,
@@ -156,7 +156,7 @@ class game_class:
 
         #         self.defender.execute_strategy(self.attacker.network, self.attacker.detect_prob, self.graph,
         #                                        self.FN / (self.TP + self.FN), self.FP / (self.TN + self.FP), self.NIDS_eviction)
-        self.defender.update_attribute(get_average_detect_prob(self.attacker_list))
+        self.defender.update_attribute(self.attacker_list)
         self.update_graph()
 
     def attacker_round(self, simulation_id):
@@ -440,14 +440,14 @@ class game_class:
         att_HEU_one_game = np.array(att_HEU_one_game)
         self.att_HEU_history.append(att_HEU_one_game)
         self.def_HEU_history.append(
-            self.defender.HEU[self.defender.chosen_strategy_list])
+            self.defender.DHEU[self.defender.chosen_strategy_list])
 
         # AHEU/DHEU per Strategy
         AHEU_per_game = {}
         for attacker in self.attacker_list:
             AHEU_per_game[attacker.attacker_ID] = attacker.HEU
         self.AHEU_per_Strategy_History.append(AHEU_per_game)
-        self.DHEU_per_Strategy_History.append(self.defender.HEU)
+        self.DHEU_per_Strategy_History.append(self.defender.DHEU)
 
         # Att/Def Strategy
         att_strat_one_game = []
@@ -562,7 +562,7 @@ class game_class:
         # self.att_HEU_DD_IPI = np.vstack(
         #     (self.att_HEU_DD_IPI, self.attacker.HEU))
         # self.def_HEU_DD_IPI = np.vstack(
-        #     (self.def_HEU_DD_IPI, self.defender.HEU))
+        #     (self.def_HEU_DD_IPI, self.defender.DHEU))
 
 # In[ ]:
 

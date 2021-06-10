@@ -2064,14 +2064,14 @@ if __name__ == '__main__':
     display_average_cost()
     display_cost()
 
-
+    #
     # display_MTTSF_varying_VUB()
     # display_cost_varying_VUB()
     # display_HEU_varying_VUB()
     # display_uncertainty_varying_VUB()
     # display_FPR_varying_VUB()
     # display_TPR_varying_VUB()
-    #
+    # #
     # display_MTTSF_varying_AAP()
     # display_cost_varying_AAP()
     # display_HEU_varying_AAP()

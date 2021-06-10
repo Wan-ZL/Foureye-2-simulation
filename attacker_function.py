@@ -113,8 +113,9 @@ def attacker_uncertainty_update(att_in_system_time, att_detect, dec, uncertain_s
 
 # APV: value of an intermediate node i in an attack path, APV=-1 means the node is detected as Honeypot
 def calc_APV(G_att, G_real, node_ID, attack_cost, attack_detect_prob):
+    # attacker won't choose compromised node
     if G_att.nodes[node_ID]["compromised_status"]:
-        return 1
+        return -0.5
 
     att_detect_honey = False
     if G_real.nodes[node_ID]["honeypot"] == 1:
@@ -131,7 +132,8 @@ def calc_APV(G_att, G_real, node_ID, attack_cost, attack_detect_prob):
         # if the node is honeypot, the APV for honeypot is 0.
         return -1
     else:
-        return (1 - math.exp(-(1/attack_cost))) * G_att.nodes[node_ID]["normalized_vulnerability"]
+        return (3 - attack_cost) * G_att.nodes[node_ID]["normalized_vulnerability"]
+        # return (1 - math.exp(-(1/attack_cost))) * G_att.nodes[node_ID]["normalized_vulnerability"]
 
 
 # Attack Impact of given attack k of attacker i
@@ -149,6 +151,49 @@ def attack_impact(G, new_compromised_list, node_number):
     ai = total_criticality #/ node_number #G.number_of_nodes() #/ G.number_of_nodes()  # for test, original uncomment
     return ai
 
+def expected_attack_impact(G, neighbor_list):
+    expected_list = []
+    for node_id in neighbor_list:
+        if G.has_node(node_id):
+            if G.nodes[node_id]["normalized_vulnerability"] < random.random():
+                expected_list.append(node_id)
+
+    attack_impact = 0
+    for node_id in expected_list:
+        attack_impact += G.nodes[node_id]["criticality"]
+
+    return attack_impact
+
+def exp_att_impact_of_all_stra(G_att, att_location, strategy_number, compromised_nodes):
+    attack_impact_list = np.ones(strategy_number)
+    if att_location is None:
+        return attack_impact_list
+
+    # single node (SN) attack
+    att_neighbors = [n for n in G_att[att_location]]
+    e_ai = expected_attack_impact(G_att, att_neighbors)
+    attack_impact_list[1] = e_ai
+    attack_impact_list[3] = e_ai
+    attack_impact_list[4] = e_ai
+    attack_impact_list[5] = e_ai
+    attack_impact_list[6] = e_ai
+    attack_impact_list[7] = e_ai
+
+    # multiple node (MN) attack
+    att_neighbors = []
+
+    for node_id in compromised_nodes:
+        if G_att.has_node(node_id):
+            if not G_att.nodes[node_id]["evicted_mark"]:
+                att_neighbors += graph_function.adjacent_node(G_att, node_id)
+
+    att_neighbors = list(set(att_neighbors))
+    e_ai = expected_attack_impact(G_att, att_neighbors)
+    attack_impact_list[2] = e_ai
+
+    return attack_impact_list
+
+
 
 
 
@@ -157,14 +202,6 @@ def get_attacker_network_list(attacker_list):
     for attacker in attacker_list:
         G_att_list.append(attacker.network)
     return G_att_list
-
-
-
-
-
-
-
-
 
 
 # AS1 – Monitoring attack
@@ -276,7 +313,7 @@ def attack_AS_2(node_info_list, G_real, G_att, G_def, P_fake,
 # AS3 – Botnet-based attack
 # (a legitimate node with more than one compromised node will be tried more than one times)
 # return: attack_result["ids"] is new compromised ids
-def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
+def attack_AS_3(compromised_nodes, G_real, G_att, G_def, P_fake,
                 attack_detect_prob):
     attack_result = {"attack_cost": 3, "ids": []}
 
@@ -287,7 +324,7 @@ def attack_AS_3(collection_list, G_real, G_att, G_def, P_fake,
 
     attacker_adjacent = []
 
-    for node_id in collection_list:
+    for node_id in compromised_nodes:
     # for node_id in G_real.nodes():      # test, original: above one
         if G_real.has_node(node_id):
             if not G_real.nodes[node_id]["evicted_mark"]:
@@ -792,11 +829,12 @@ def attacker_class_choose_strategy(self, def_strategy_number,
     self.S_j = S_j
 
     # eq. 17
+    self.expected_impact = exp_att_impact_of_all_stra(self.network, self.location, self.strategy_number, self.compromised_nodes)
     utility = np.zeros((self.strategy_number, def_strategy_number))
     for i in range(self.strategy_number):
         for j in range(def_strategy_number):
             utility[i,
-                    j] = (self.impact_record[i] +
+                    j] = (self.expected_impact[i] +
                           defend_cost_record[j] / 3) - (
                                  self.strat_cost[i] / 3 + defend_impact_record[j])
 
@@ -895,7 +933,7 @@ def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, c
                 print("attack 2 failed")
 
     elif self.chosen_strategy == 2:
-        attack_result = attack_AS_3(self.collection_list, G_real, self.network, G_def, self.P_fake[0],
+        attack_result = attack_AS_3(self.compromised_nodes, G_real, self.network, G_def, self.P_fake[0],
                                     self.detect_prob)
         if attack_result["ids"]:
             self.compromised_nodes.extend(attack_result["ids"])
@@ -964,19 +1002,9 @@ def attacker_class_execute_strategy(self, G_real, G_def, node_size_multiplier, c
             if display:
                 print("attack 9 executed")
 
-    self.impact_record[self.chosen_strategy] = attack_impact(G_real, attack_result["ids"], self.node_number)    # original: uncomment
-    # self.impact_count[self.chosen_strategy] += attack_impact(G_real, attack_result["ids"])   # for test
-    # self.strategy_count[self.chosen_strategy] += 1
-    # # temp_list = np.zeros(self.strategy_number)
-    # for index in range(len(self.impact_record)):
-    #     if not self.strategy_count[index] == 0:
-    #         self.impact_record[index] = self.impact_count[index] / self.strategy_count[index]
+    self.impact_record[self.chosen_strategy] = attack_impact(G_real, attack_result["ids"], self.node_number)    # old equation
 
 
-
-
-    # print("Impact is:")
-    # print(self.impact_record[self.chosen_strategy])
     if attack_result["ids"]:
         self.location = random.choice(attack_result["ids"])
 
@@ -990,6 +1018,7 @@ class attacker_class:
     def __init__(self, game, attacker_ID):
         if display:
             print("create attacker")
+        self.game = game
         self.attacker_ID = attacker_ID
         self.network = copy.deepcopy(game.graph.network)  # attacker's view
         self.node_number = game.graph.node_number
@@ -1000,6 +1029,7 @@ class attacker_class:
         self.impact_count = np.zeros(self.strategy_number)   # for test
         self.strategy_count = np.zeros(self.strategy_number)   # for test
         self.impact_record = np.ones(self.strategy_number)  # attacker believe all strategy have full impact initially
+        self.expected_impact = np.ones(self.strategy_number) # expected attack impact
         self.strat_cost = att_strategy_cost(self.strategy_number)
         self.strat_option = att_strategy_option_matrix(game.CKC_number, self.strategy_number)  # Table 4
         self.belief_context = [1 / (game.CKC_number + 1)] * (game.CKC_number + 1)
@@ -1031,6 +1061,25 @@ class attacker_class:
         self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))
         self.observed_CKC_count = np.zeros(self.CKC_number)
         self.S_j = np.ones(self.strategy_number) / self.strategy_number
+
+        # Below is the defender's belief on this attacker
+        self.defense_impact = np.ones(self.strategy_number)
+        self.defender_uncertain_scheme = game.uncertain_scheme_def
+        self.defender_decision_scheme = game.decision_scheme
+        if self.defender_decision_scheme == 0:
+            self.defender_uncertainty = 1
+        else:
+            if self.defender_uncertain_scheme:
+                self.defender_uncertainty = 1
+            else:
+                self.defender_uncertainty = 0
+        self.defender_monit_time = 1
+        self.defender_HEU = np.zeros(self.strategy_number)
+        self.NIDS_detected = False
+        self.defender_observation = np.zeros(self.strategy_number)
+        self.defender_strat_cost = def_strategy_cost(self.strategy_number)
+
+
 
     choose_strategy = attacker_class_choose_strategy
 
@@ -1088,6 +1137,7 @@ class attacker_class:
     def update_attribute(self, dec):
         # monitor time
         self.monit_time += 1
+        self.defender_monit_time += 1
 
         # if in_system
         if self.CKC_position >= 2:
@@ -1107,9 +1157,39 @@ class attacker_class:
                 self.in_honeynet = False
 
         # uncertainty
-        self.uncertainty = attacker_uncertainty_update(self.in_system_time,
+        self.uncertainty = attacker_uncertainty_update(self.monit_time,
                                                        self.detect_prob, dec,
                                                        self.uncertain_scheme, self.decision_scheme)
+        self.defender_uncertainty = defender_uncertainty_update(self.detect_prob, self.defender_monit_time,
+                                                                self.defender_uncertain_scheme, self.defender_decision_scheme)
+        # defender observe this attacker
+        self.defender_observation[self.chosen_strategy] += 1
+        # defender's HEU on this attacker
+        if not self.NIDS_detected:
+            if self.location is not None:
+                if self.game.defender.network.nodes[self.location]["compromised_status"]:
+                    self.NIDS_detected = True
+
+        if self.NIDS_detected:
+            strat_prob = self.defender_observation/np.sum(self.defender_observation)
+            xi = 5
+            for strategy_id in self.game.defender.chosen_strategy_list:
+                self.defense_impact[strategy_id] = sum(
+                    [strat_prob[stra] * math.exp(-1 * xi * self.expected_impact[stra]) for stra in
+                     np.arange(self.strategy_number)])
+
+        utility = np.zeros((self.strategy_number, self.strategy_number))
+        for i in range(self.strategy_number):
+            for j in range(self.strategy_number):
+                utility[i, j] = (self.defense_impact[i] +
+                                self.strat_cost[j] / 3) - (self.defender_strat_cost[i] / 3 + self.impact_record[j])
+        EU_C = np.zeros(self.strategy_number)
+        for i in range(self.strategy_number):
+            for j in range(self.strategy_number):
+                EU_C[i] += self.defender_observation[j] * utility[i, j]
+        self.defender_HEU = EU_C
+
+
 
     def random_moving(self):
         if self.location is None:

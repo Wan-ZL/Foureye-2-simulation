@@ -441,9 +441,9 @@ if __name__ == '__main__':
 
     # ML predict action
     classi_schemes = ["ML_collect_data_PI", "ML_collect_data_IPI"]
-    # train_ML_predict_action(classi_schemes, x_length, n_neighbors, strategy_number)
+    train_ML_predict_action(classi_schemes, x_length, n_neighbors, strategy_number)
     # train_ML_predict_action_vary_AAP(classi_schemes, x_length, n_neighbors, strategy_number)
-    train_ML_predict_action_vary_VUB(classi_schemes, x_length, n_neighbors, strategy_number)
+    # train_ML_predict_action_vary_VUB(classi_schemes, x_length, n_neighbors, strategy_number)
     print('The scikit-learn version is {}.'.format(sklearn.__version__))
 
 
