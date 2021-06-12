@@ -102,6 +102,8 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme_att, uncer
     compromise_probability_all_result = {}
     number_of_inside_attacker_all_result = {}
     all_result_after_each_game_all_result = {}
+    hitting_probability_all_result = {}
+
 
     results = []
 
@@ -183,6 +185,8 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme_att, uncer
             number_of_inside_attacker_all_result[index] = future.result().number_of_inside_attacker
             # data for ML model training
             all_result_after_each_game_all_result[index] = future.result().all_result_after_each_game
+            # hitting probability for Hypergame Nash Equilibrium
+            hitting_probability_all_result[index] = future.result().hitting_result
 
 
             index += 1
@@ -368,6 +372,11 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme_att, uncer
     the_file = open("data/trainning_data/" + current_scheme + "/all_result_after_each_game_" + dt_string + ".pkl",
                     "wb+")
     pickle.dump(all_result_after_each_game_all_result, the_file)
+    the_file.close()
+
+    # Hitting Probability
+    the_file = open("data/" + current_scheme + "/R_self_5/hitting_probability.pkl", "wb+")
+    pickle.dump(hitting_probability_all_result, the_file)
     the_file.close()
 
 
@@ -1115,5 +1124,10 @@ if __name__ == '__main__':
         # run_sumulation_group_special("DD-IPI_ML_data", True, True, False, 1, simulation_time, "VUB", VUB)
 
     print("Project took", time.time() - start, "seconds.")
+    try:
+        os.system('say "your program has finished"')
+    except:
+        print("command not found: say")
+    # os.system('play -nq -t alsa synth {} sine {}'.format(duration, freq))
 
     # run_sumulation_group_1("DD-Random-PI", True, False, 0, simulation_time) # removed

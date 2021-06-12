@@ -5,6 +5,7 @@ import numpy as np
 import os
 from matplotlib.ticker import MaxNLocator
 import textwrap
+import pylab
 
 
 def display_TTSF():
@@ -172,7 +173,7 @@ def display_HEU_In_One():
 
     plt.legend()
     plt.xlabel("# of games", fontsize=font_size)
-    plt.ylabel("Averaged AHEU", fontsize=font_size)
+    plt.ylabel("Averaged C-AHEU", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
@@ -205,7 +206,7 @@ def display_HEU_In_One():
 
     plt.legend()
     plt.xlabel("# of games", fontsize=font_size)
-    plt.ylabel("Averaged DHEU", fontsize=font_size)
+    plt.ylabel("Averaged C-DHEU", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
@@ -242,7 +243,7 @@ def display_average_HEU_In_One():
 
     # plt.legend()
     plt.xlabel("Schemes", fontsize=font_size)
-    plt.ylabel("Average AHEU", fontsize=font_size)
+    plt.ylabel("Average C-AHEU", fontsize=font_size)
     plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in schemes], fontsize=0.6*axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
@@ -276,7 +277,7 @@ def display_average_HEU_In_One():
 
     # plt.legend()
     plt.xlabel("Schemes", fontsize=font_size)
-    plt.ylabel("Average DHEU", fontsize=font_size)
+    plt.ylabel("Average C-DHEU", fontsize=font_size)
     plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in schemes],fontsize=0.6*axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
@@ -678,7 +679,7 @@ def display_per_Strategy_HEU():
             plt.plot(range(max_length), AHEU_value_per_Strategy_averaged[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
         plt.xlabel("# of games", fontsize=font_size)
-        plt.ylabel("AHEU Value", fontsize=font_size / 1.5)
+        plt.ylabel("C-AHEU Value", fontsize=font_size / 1.5)
         plt.xticks(fontsize=axis_size)
         plt.yticks(fontsize=axis_size)
         plt.tight_layout()
@@ -715,7 +716,7 @@ def display_per_Strategy_HEU():
             plt.plot(range(max_length), DHEU_value_per_Strategy_average[strategy_id], label=f"Stra {strategy_id + 1}")
         plt.legend(prop={"size": legend_size}, ncol=4, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
         plt.xlabel("# of games", fontsize=font_size)
-        plt.ylabel("DHEU Value", fontsize=font_size / 1.5)
+        plt.ylabel("C-DHEU Value", fontsize=font_size / 1.5)
         plt.xticks(fontsize=axis_size)
         plt.yticks(fontsize=axis_size)
         plt.tight_layout()
@@ -1333,6 +1334,70 @@ def display_cost():
     plt.savefig("Figure/All-In-One/def_cost.png", dpi=figure_dpi)
     plt.show()
 
+def display_hitting_prob(schemes):
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R_self_5/hitting_probability.pkl", "rb")
+        hitting_prob = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for key in hitting_prob.keys():
+            if max_length < len(hitting_prob[key]):
+                max_length = len(hitting_prob[key])
+
+        print(hitting_prob)
+        print(max_length)
+        hit_prob = []
+
+        for index in range(max_length):
+            hit_counter = 0
+            total_counter = 0
+            for key in hitting_prob.keys():
+                if index < len(hitting_prob[key]):
+                    total_counter += 1
+                    if hitting_prob[key][index]:
+                        hit_counter += 1
+            hit_prob.append(hit_counter/total_counter)
+
+        print(hit_prob)
+        x_values = range(len(hit_prob))
+        y_values = hit_prob
+        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=schemes[schemes_index],
+                     linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=50, markersize=marker_size)
+    plt.legend(prop={"size": legend_size},
+                          ncol=4,
+                          bbox_to_anchor=(-0.25, 1.01, 1.25, 0),
+                          loc='lower left',
+                          mode="expand")
+    plt.xlabel("number of games", fontsize=font_size)
+    plt.ylabel("Hitting Probability", fontsize=font_size)
+    plt.xticks(fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/Hitting_Prob_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/Hitting_Prob_AllInOne.png", dpi=figure_dpi)
+    plt.show()
+
+def display_legend():
+    fig = plt.figure()
+    figlegend = plt.figure(figsize=(17.8, 0.5))
+    ax = fig.add_subplot(111)
+
+
+    lines = []
+    for schemes_index in range(len(schemes)):
+        line, = ax.plot([1, 2, 3], linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=legend_name[schemes_index])
+        lines.append(line)
+    figlegend.legend(handles=lines,prop={"size": legend_size}, ncol=len(legend_name))
+
+    fig.show()
+    figlegend.show()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    figlegend.savefig("Figure/All-In-One/legend.svg", dpi=figure_dpi)
+    figlegend.savefig("Figure/All-In-One/legend.eps", dpi=figure_dpi)
+    figlegend.savefig("Figure/All-In-One/legend.png", dpi=figure_dpi)
 
 def display_MTTSF_varying_VUB():
     plt.figure(figsize=(figure_width, figure_high))
@@ -1351,11 +1416,12 @@ def display_MTTSF_varying_VUB():
         plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(MTTSF.keys()), y_axis, yerr=error, capsize=10)
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(MTTSF.keys()), varying_range[0],fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
@@ -1394,11 +1460,12 @@ def display_cost_varying_VUB():
         plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(att_cost.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
@@ -1437,11 +1504,12 @@ def display_cost_varying_VUB():
         plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(def_cost.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
@@ -1475,15 +1543,16 @@ def display_HEU_varying_VUB():
 
         plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(att_HEU.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
-    plt.ylabel("AHEU", fontsize=font_size)
+    plt.ylabel("C-AHEU", fontsize=font_size)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
     plt.savefig("Figure/All-In-One/varying_VUB/AHEU.svg", dpi=figure_dpi)
@@ -1512,15 +1581,16 @@ def display_HEU_varying_VUB():
 
         plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(def_HEU.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
-    plt.ylabel("DHEU", fontsize=font_size)
+    plt.ylabel("C-DHEU", fontsize=font_size)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One/varying_VUB", exist_ok=True)
     plt.savefig("Figure/All-In-One/varying_VUB/DHEU.svg", dpi=figure_dpi)
@@ -1550,11 +1620,12 @@ def display_uncertainty_varying_VUB():
 
         plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(att_uncertain.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
@@ -1586,11 +1657,12 @@ def display_uncertainty_varying_VUB():
 
         plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(def_uncertain.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
@@ -1622,11 +1694,12 @@ def display_FPR_varying_VUB():
 
         plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(FPR.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
@@ -1658,11 +1731,12 @@ def display_TPR_varying_VUB():
 
         plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(TPR.keys()), varying_range[0], fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Vulnerability Upper Bound", fontsize=font_size)
@@ -1692,11 +1766,12 @@ def display_MTTSF_varying_AAP():
         plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(MTTSF.keys()), y_axis, yerr=error, capsize=10)
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
 
     plt.xticks(list(MTTSF.keys()), varying_range,fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
@@ -1736,11 +1811,12 @@ def display_cost_varying_AAP():
         plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(att_cost.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
@@ -1779,11 +1855,12 @@ def display_cost_varying_AAP():
         plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(def_cost.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
@@ -1817,15 +1894,16 @@ def display_HEU_varying_AAP():
 
         plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(att_HEU.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
-    plt.ylabel("AHEU", fontsize=font_size)
+    plt.ylabel("C-AHEU", fontsize=font_size)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
     plt.savefig("Figure/All-In-One/varying_AAP/AHEU.svg", dpi=figure_dpi)
@@ -1854,15 +1932,16 @@ def display_HEU_varying_AAP():
 
         plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(def_HEU.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
-    plt.ylabel("DHEU", fontsize=font_size)
+    plt.ylabel("C-DHEU", fontsize=font_size)
     plt.tight_layout()
     os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
     plt.savefig("Figure/All-In-One/varying_AAP/DHEU.svg", dpi=figure_dpi)
@@ -1892,11 +1971,12 @@ def display_uncertainty_varying_AAP():
 
         plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(att_uncertain.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
@@ -1928,11 +2008,12 @@ def display_uncertainty_varying_AAP():
 
         plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(def_uncertain.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
@@ -1964,11 +2045,12 @@ def display_FPR_varying_AAP():
 
         plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(FPR.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
@@ -2000,11 +2082,12 @@ def display_TPR_varying_AAP():
 
         plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
 
-    plt.legend(prop={"size": legend_size},
-               ncol=4,
-               bbox_to_anchor=(-0.17, 1, 1.2, 0),
-               loc='lower left',
-               mode="expand")
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
     plt.xticks(list(TPR.keys()), varying_range, fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
@@ -2031,8 +2114,11 @@ if __name__ == '__main__':
     marker_size = 10
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
-    schemes = ["DD-IPI", "DD-PI", "DD-ML-IPI", "DD-ML-PI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
-    # schemes = ["DD-IPI", "DD-PI", "DD-Random", "No-DD-IPI", "No-DD-PI", "No-DD-Random"]
+    use_legend = False
+    # "legend_name" has to match the "schemes"
+    legend_name =   ["HG-DD-IPI",   "G-DD-PI",  "HG-DD-ML-IPI", "G-DD-ML-PI",   "DD-Random", "HG-No-DD-IPI",    "G-No-DD-PI",   "No-DD-Random"]
+    schemes     =   ["DD-IPI",      "DD-PI",    "DD-ML-IPI",    "DD-ML-PI",     "DD-Random", "No-DD-IPI",       "No-DD-PI",     "No-DD-Random"]
+    # schemes = ["DD-Random","DD-IPI", "DD-PI"]
 
 
 
@@ -2051,27 +2137,29 @@ if __name__ == '__main__':
     # display_impact()
     # display_strategy_prob_distribution()
     #
-    display_uncertainty()
-    display_average_uncertainty()
-    display_HEU_In_One()
-    display_average_HEU_In_One()
-    display_SysFail_in_one()
-    display_TTSF_in_one_bar()
-    display_inside_attacker_in_one()
-    display_strategy_prob_distribution_in_one()
-    display_average_TPR()
-    display_TPR()
-    display_average_cost()
-    display_cost()
+    # display_uncertainty()
+    # display_average_uncertainty()
+    # display_HEU_In_One()
+    # display_average_HEU_In_One()
+    # display_SysFail_in_one()
+    # display_TTSF_in_one_bar()
+    # display_inside_attacker_in_one()
+    # display_strategy_prob_distribution_in_one()
+    # display_average_TPR()
+    # display_TPR()
+    # display_average_cost()
+    # display_cost()
+    # display_hitting_prob(["DD-Random","DD-IPI"])
 
-    #
+    display_legend()
+
     # display_MTTSF_varying_VUB()
     # display_cost_varying_VUB()
     # display_HEU_varying_VUB()
     # display_uncertainty_varying_VUB()
     # display_FPR_varying_VUB()
     # display_TPR_varying_VUB()
-    # #
+    #
     # display_MTTSF_varying_AAP()
     # display_cost_varying_AAP()
     # display_HEU_varying_AAP()

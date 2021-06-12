@@ -103,6 +103,7 @@ class game_class:
         self.all_result_after_each_game = []
         self.ML_x_data = []
         self.ML_y_data = []
+        self.hitting_result = []
         # self.att_previous_strat = np.zeros(self.strategy_number)
         self.att_previous_impact = np.zeros(self.strategy_number)
         self.def_previous_impact = np.zeros(self.strategy_number)
@@ -436,7 +437,7 @@ class game_class:
         # Att/Def HEU
         att_HEU_one_game = []
         for attacker in self.attacker_list:
-            att_HEU_one_game.append(attacker.HEU[attacker.chosen_strategy])
+            att_HEU_one_game.append(attacker.AHEU[attacker.chosen_strategy])
         att_HEU_one_game = np.array(att_HEU_one_game)
         self.att_HEU_history.append(att_HEU_one_game)
         self.def_HEU_history.append(
@@ -445,7 +446,7 @@ class game_class:
         # AHEU/DHEU per Strategy
         AHEU_per_game = {}
         for attacker in self.attacker_list:
-            AHEU_per_game[attacker.attacker_ID] = attacker.HEU
+            AHEU_per_game[attacker.attacker_ID] = attacker.AHEU
         self.AHEU_per_Strategy_History.append(AHEU_per_game)
         self.DHEU_per_Strategy_History.append(self.defender.DHEU)
 
@@ -560,9 +561,49 @@ class game_class:
             (self.def_impact, self.defender.impact_record))
         # # HEU in DD IPI
         # self.att_HEU_DD_IPI = np.vstack(
-        #     (self.att_HEU_DD_IPI, self.attacker.HEU))
+        #     (self.att_HEU_DD_IPI, self.attacker.AHEU))
         # self.def_HEU_DD_IPI = np.vstack(
         #     (self.def_HEU_DD_IPI, self.defender.DHEU))
+
+        for attacker in self.attacker_list:
+            hit = False
+            if random.random() < attacker.uncertainty:
+                att_AHEU_str_index = random.choices(range(self.strategy_number))[0]
+                att_DHEU_str_index = random.choices(range(self.strategy_number))[0]
+            else:
+                att_AHEU_str_index = random.choice(np.where(attacker.AHEU == max(attacker.AHEU))[0])
+                att_DHEU_str_index = random.choice(np.where(attacker.att_guess_DHEU == max(attacker.att_guess_DHEU))[0])
+
+            if random.random() < self.defender.uncertainty:
+                def_AHEU_str_index = random.choices(range(self.strategy_number))[0]
+                def_DHEU_str_index = random.choices(range(self.strategy_number))[0]
+            else:
+                def_AHEU_str_index = random.choice(np.where(attacker.def_guess_AHEU == max(attacker.def_guess_AHEU))[0])
+                def_DHEU_str_index = random.choice(np.where(self.defender.DHEU == max(self.defender.DHEU))[0])
+
+            # if random.random() < attacker.uncertainty:
+            #     att_AHEU_str_index = random.choices(range(self.strategy_number))[0]
+            # else:
+            #     att_AHEU_str_index = random.choice(np.where(attacker.AHEU == max(attacker.AHEU))[0])
+            # if random.random() < attacker.uncertainty:
+            #     att_DHEU_str_index = random.choices(range(self.strategy_number))[0]
+            # else:
+            #     att_DHEU_str_index = random.choice(np.where(attacker.att_guess_DHEU == max(attacker.att_guess_DHEU))[0])
+            #
+            # if random.random() < self.defender.uncertainty:
+            #     def_AHEU_str_index = random.choices(range(self.strategy_number))[0]
+            # else:
+            #     def_AHEU_str_index = random.choice(np.where(attacker.def_guess_AHEU == max(attacker.def_guess_AHEU))[0])
+            # if random.random() < self.defender.uncertainty:
+            #     def_DHEU_str_index = random.choices(range(self.strategy_number))[0]
+            # else:
+            #     # def_DHEU_str_index = random.choice(np.where(attacker.defender_HEU == max(attacker.defender_HEU))[0])
+            #     def_DHEU_str_index = random.choice(np.where(self.defender.DHEU == max(self.defender.DHEU))[0])
+
+            if att_AHEU_str_index == def_AHEU_str_index and att_DHEU_str_index == def_DHEU_str_index:
+                self.hitting_result.append(True)
+            else:
+                self.hitting_result.append(False)
 
 # In[ ]:
 

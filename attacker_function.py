@@ -863,41 +863,42 @@ def attacker_class_choose_strategy(self, def_strategy_number,
         HEU = a + (HEU - min(HEU)) * (b - a) / (max(HEU) - min(HEU))
     else:
         HEU = np.ones(self.strategy_number) * a
-    self.HEU = HEU  # uncertainty case doesn't consider as real HEU
-
+    # self.HEU = HEU  # uncertainty case doesn't consider as real HEU
+    AHEU = HEU      # uncertainty case doesn't consider as real HEU
+    self.AHEU = AHEU
     # eq. 23
-    AHEU = np.zeros(self.strategy_number)
+    AHEU_weight = np.zeros(self.strategy_number)
     for index in range(self.strategy_number):
-        AHEU[index] = HEU[index] * self.strat_option[
+        AHEU_weight[index] = AHEU[index] * self.strat_option[
             self.CKC_position, index]  # for Table 4
 
     if random.random() < self.uncertainty:
         # uncertain level
         # Whole Random:
-        AHEU = np.ones(self.strategy_number)
+        AHEU_weight = np.ones(self.strategy_number)
         # Limited Random:
         # if 0 <= self.CKC_position <= 1: # outside type
-        #     AHEU = np.zeros(self.strategy_number)
-        #     AHEU[0] = 1
-        #     AHEU[1] = 1
+        #     AHEU_weight = np.zeros(self.strategy_number)
+        #     AHEU_weight[0] = 1
+        #     AHEU_weight[1] = 1
         # else:                           # inside type
-        #     AHEU = np.ones(self.strategy_number)
+        #     AHEU_weight = np.ones(self.strategy_number)
 
     # Selection Scheme
     if self.decision_scheme == 0 or self.decision_scheme == 3:  # for random selection scheme
         self.chosen_strategy = random.choices(range(self.strategy_number))[0]
     elif self.decision_scheme == 1 or self.decision_scheme == 2:  # HEU-based selection scheme
-        if sum(AHEU) == 0:  # fix python 3.5 error
+        if sum(AHEU_weight) == 0:  # fix python 3.5 error
             self.chosen_strategy = random.choices(range(self.strategy_number))[0]
         else:
-            self.chosen_strategy = random.choices(range(self.strategy_number), weights=AHEU, k=1)[0]
+            self.chosen_strategy = random.choices(range(self.strategy_number), weights=AHEU_weight, k=1)[0]
     else:
         raise Exception("Error: Unknown decision_scheme")
 
-    # if sum(AHEU) == 0:  # fix python 3.5 error
+    # if sum(AHEU_weight) == 0:  # fix python 3.5 error
     #     self.chosen_strategy = random.choices(range(self.strategy_number))[0]
     # else:
-    #     self.chosen_strategy = random.choices(range(self.strategy_number), weights=AHEU, k=1)[0]
+    #     self.chosen_strategy = random.choices(range(self.strategy_number), weights=AHEU_weight, k=1)[0]
 
     return self.chosen_strategy
 
@@ -1042,6 +1043,7 @@ class attacker_class:
         self.detect_prob = random.uniform(0, 0.5)
         self.decision_scheme = game.decision_scheme
         self.chosen_strategy = 0
+        self.chosen_strategy_record = np.zeros(self.strategy_number)
         self.in_honeynet = False
         self.uncertain_scheme = game.uncertain_scheme_att
         if game.decision_scheme == 0:
@@ -1052,7 +1054,7 @@ class attacker_class:
                 self.uncertainty = 1 # test, orignial 1
             else:
                 self.uncertainty = 0    # test, orignial 0
-        self.HEU = np.zeros(self.strategy_number)
+        self.AHEU = np.zeros(self.strategy_number)
         self.compromised_nodes = []
         self.EU_C = None
         self.EU_CMS = None
@@ -1061,6 +1063,7 @@ class attacker_class:
         self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))
         self.observed_CKC_count = np.zeros(self.CKC_number)
         self.S_j = np.ones(self.strategy_number) / self.strategy_number
+        self.att_guess_DHEU = np.zeros(self.strategy_number)
 
         # Below is the defender's belief on this attacker
         self.defense_impact = np.ones(self.strategy_number)
@@ -1075,6 +1078,7 @@ class attacker_class:
                 self.defender_uncertainty = 0
         self.defender_monit_time = 1
         self.defender_HEU = np.zeros(self.strategy_number)
+        self.def_guess_AHEU = np.zeros(self.strategy_number)
         self.NIDS_detected = False
         self.defender_observation = np.zeros(self.strategy_number)
         self.defender_strat_cost = def_strategy_cost(self.strategy_number)
@@ -1162,7 +1166,7 @@ class attacker_class:
                                                        self.uncertain_scheme, self.decision_scheme)
         self.defender_uncertainty = defender_uncertainty_update(self.detect_prob, self.defender_monit_time,
                                                                 self.defender_uncertain_scheme, self.defender_decision_scheme)
-        # defender observe this attacker
+        # defender observe this attacker (TODO: this should under uncertainty)
         self.defender_observation[self.chosen_strategy] += 1
         # defender's HEU on this attacker
         if not self.NIDS_detected:
@@ -1170,8 +1174,11 @@ class attacker_class:
                 if self.game.defender.network.nodes[self.location]["compromised_status"]:
                     self.NIDS_detected = True
 
+        if np.sum(self.defender_observation) == 0:
+            strat_prob = np.zeros(self.strategy_number)
+        else:
+            strat_prob = self.defender_observation / np.sum(self.defender_observation)
         if self.NIDS_detected:
-            strat_prob = self.defender_observation/np.sum(self.defender_observation)
             xi = 5
             for strategy_id in self.game.defender.chosen_strategy_list:
                 self.defense_impact[strategy_id] = sum(
@@ -1186,9 +1193,59 @@ class attacker_class:
         EU_C = np.zeros(self.strategy_number)
         for i in range(self.strategy_number):
             for j in range(self.strategy_number):
-                EU_C[i] += self.defender_observation[j] * utility[i, j]
+                EU_C[i] += strat_prob[j] * utility[i, j]
         self.defender_HEU = EU_C
+        self.att_guess_DHEU = self.att_guess_def_EU_C()
+        self.def_guess_AHEU = self.def_guess_att_EU_C()
 
+    def att_guess_def_EU_C(self):
+        # attacker observe itself
+        self.chosen_strategy_record[self.chosen_strategy] += 1
+
+        if np.sum(self.defender_observation) == 0:
+            strat_prob = np.zeros(self.strategy_number)
+        else:
+            strat_prob = self.chosen_strategy_record / np.sum(self.chosen_strategy_record)
+        xi = 5
+
+        att_guess_def_impact = np.ones(self.strategy_number)
+        for strategy_id in range(self.strategy_number):
+            att_guess_def_impact[strategy_id] = sum(
+                [strat_prob[stra] * math.exp(-1 * xi * self.expected_impact[stra]) for stra in
+                 np.arange(self.strategy_number)])
+
+        utility = np.zeros((self.strategy_number, self.strategy_number))
+        for i in range(self.strategy_number):
+            for j in range(self.strategy_number):
+                utility[i, j] = (att_guess_def_impact[i] +
+                                 self.strat_cost[j] / 3) - (self.defender_strat_cost[i] / 3 + self.impact_record[j])
+        EU_C = np.zeros(self.strategy_number)
+        for i in range(self.strategy_number):
+            for j in range(self.strategy_number):
+                EU_C[i] += strat_prob[j] * utility[i, j]
+        return EU_C
+
+    def def_guess_att_EU_C(self):
+        if np.sum(self.defender_observation) == 0:
+            strat_prob = np.zeros(self.strategy_number)
+        else:
+            strat_prob = self.chosen_strategy_record / np.sum(self.chosen_strategy_record)
+
+        def_guess_att_impact = np.ones(self.strategy_number)
+        if self.NIDS_detected:
+            xi = 5
+            def_guess_att_impact = exp_att_impact_of_all_stra(self.game.defender.network, self.location, self.strategy_number, self.compromised_nodes)
+
+        utility = np.zeros((self.strategy_number, self.strategy_number))
+        for i in range(self.strategy_number):
+            for j in range(self.strategy_number):
+                utility[i, j] = (def_guess_att_impact[i] + self.defender_strat_cost[j] / 3) - (
+                            self.strat_cost[i] / 3 + self.defense_impact[j])
+        EU_C = np.zeros(self.strategy_number)
+        for i in range(self.strategy_number):
+            for j in range(self.strategy_number):
+                EU_C[i] += strat_prob[j] * utility[i, j]
+        return EU_C
 
 
     def random_moving(self):
