@@ -1334,7 +1334,7 @@ def display_cost():
     plt.savefig("Figure/All-In-One/def_cost.png", dpi=figure_dpi)
     plt.show()
 
-def display_hitting_prob(schemes):
+def display_hitting_prob(schemes, legend_name):
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R_self_5/hitting_probability.pkl", "rb")
@@ -1363,15 +1363,14 @@ def display_hitting_prob(schemes):
         print(hit_prob)
         x_values = range(len(hit_prob))
         y_values = hit_prob
-        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=schemes[schemes_index],
+        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index],
                      linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=50, markersize=marker_size)
     plt.legend(prop={"size": legend_size},
-                          ncol=4,
-                          bbox_to_anchor=(-0.25, 1.01, 1.25, 0),
-                          loc='lower left',
-                          mode="expand")
+               ncol=1,
+               loc='upper left')
+    # bbox_to_anchor = (-0.25, 1.01, 1.25, 0),
     plt.xlabel("number of games", fontsize=font_size)
-    plt.ylabel("Hitting Probability", fontsize=font_size)
+    plt.ylabel("HNE hitting ratio", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
@@ -1413,7 +1412,7 @@ def display_MTTSF_varying_VUB():
             y_axis[varying_key] = np.mean(list(MTTSF[varying_key].values()))
             error[varying_key] = np.std(list(MTTSF[varying_key].values()))
 
-        plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(MTTSF.keys()), y_axis, yerr=error, capsize=10)
 
     if use_legend:
@@ -1457,7 +1456,7 @@ def display_cost_varying_VUB():
             y_axis[varying_key] = att_cost_sum/att_cost_counter
             error[varying_key] = np.std(cost_list)
 
-        plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
     if use_legend:
@@ -1501,7 +1500,7 @@ def display_cost_varying_VUB():
             y_axis[varying_key] = def_cost_sum/def_cost_counter
             error[varying_key] = np.std(cost_list)
 
-        plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
     if use_legend:
@@ -1541,7 +1540,7 @@ def display_HEU_varying_VUB():
                     att_HEU_counter += len(HEU_per_game)
             y_axis[varying_key] = att_HEU_sum / att_HEU_counter
 
-        plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1579,7 +1578,7 @@ def display_HEU_varying_VUB():
                     def_HEU_counter += len(HEU_per_game)
             y_axis[varying_key] = def_HEU_sum / def_HEU_counter
 
-        plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1618,7 +1617,7 @@ def display_uncertainty_varying_VUB():
                     att_uncertain_counter += len(uncertain_per_game)
             y_axis[varying_key] = att_uncertain_sum / att_uncertain_counter
 
-        plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1655,7 +1654,7 @@ def display_uncertainty_varying_VUB():
                 def_uncertain_counter += len(def_uncertain[varying_key][sim_key])
             y_axis[varying_key] = def_uncertain_sum / def_uncertain_counter
 
-        plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1692,7 +1691,7 @@ def display_FPR_varying_VUB():
                 FPR_counter += len(FPR[varying_key][sim_key])
             y_axis[varying_key] = FPR_sum / FPR_counter
 
-        plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1729,7 +1728,7 @@ def display_TPR_varying_VUB():
                 TPR_counter += len(TPR[varying_key][sim_key])
             y_axis[varying_key] = TPR_sum / TPR_counter
 
-        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1763,7 +1762,7 @@ def display_MTTSF_varying_AAP():
             y_axis[varying_key] = np.mean(list(MTTSF[varying_key].values()))
             error[varying_key] = np.std(list(MTTSF[varying_key].values()))
 
-        plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(MTTSF.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(MTTSF.keys()), y_axis, yerr=error, capsize=10)
 
     if use_legend:
@@ -1808,7 +1807,7 @@ def display_cost_varying_AAP():
             y_axis[varying_key] = att_cost_sum/att_cost_counter
             error[varying_key] = np.std(cost_list)
 
-        plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(att_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
     if use_legend:
@@ -1852,7 +1851,7 @@ def display_cost_varying_AAP():
             y_axis[varying_key] = def_cost_sum/def_cost_counter
             error[varying_key] = np.std(cost_list)
 
-        plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(def_cost.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
         # plt.errorbar(list(att_cost.keys()), y_axis, yerr=error, capsize=10)
 
     if use_legend:
@@ -1892,7 +1891,7 @@ def display_HEU_varying_AAP():
                     att_HEU_counter += len(HEU_per_game)
             y_axis[varying_key] = att_HEU_sum / att_HEU_counter
 
-        plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(att_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1930,7 +1929,7 @@ def display_HEU_varying_AAP():
                     def_HEU_counter += len(HEU_per_game)
             y_axis[varying_key] = def_HEU_sum / def_HEU_counter
 
-        plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(def_HEU.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -1969,7 +1968,7 @@ def display_uncertainty_varying_AAP():
                     att_uncertain_counter += len(uncertain_per_game)
             y_axis[varying_key] = att_uncertain_sum / att_uncertain_counter
 
-        plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(att_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -2006,7 +2005,7 @@ def display_uncertainty_varying_AAP():
                 def_uncertain_counter += len(def_uncertain[varying_key][sim_key])
             y_axis[varying_key] = def_uncertain_sum / def_uncertain_counter
 
-        plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(def_uncertain.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -2043,7 +2042,7 @@ def display_FPR_varying_AAP():
                 FPR_counter += len(FPR[varying_key][sim_key])
             y_axis[varying_key] = FPR_sum / FPR_counter
 
-        plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -2080,7 +2079,7 @@ def display_TPR_varying_AAP():
                 TPR_counter += len(TPR[varying_key][sim_key])
             y_axis[varying_key] = TPR_sum / TPR_counter
 
-        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=schemes[schemes_index])
+        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
 
     if use_legend:
         plt.legend(prop={"size": legend_size},
@@ -2111,7 +2110,7 @@ if __name__ == '__main__':
     figure_dpi = 100
     legend_size = 15
     axis_size = 20
-    marker_size = 10
+    marker_size = 8
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
     use_legend = False
@@ -2149,23 +2148,23 @@ if __name__ == '__main__':
     # display_TPR()
     # display_average_cost()
     # display_cost()
-    # display_hitting_prob(["DD-Random","DD-IPI"])
+    display_hitting_prob(["DD-Random","DD-IPI", "DD-PI"], ["DD-Random", "HG-DD-IPI", "G-DD-PI"])
 
-    display_legend()
+    # display_legend()
 
-    # display_MTTSF_varying_VUB()
-    # display_cost_varying_VUB()
-    # display_HEU_varying_VUB()
-    # display_uncertainty_varying_VUB()
-    # display_FPR_varying_VUB()
-    # display_TPR_varying_VUB()
-    #
-    # display_MTTSF_varying_AAP()
-    # display_cost_varying_AAP()
-    # display_HEU_varying_AAP()
-    # display_uncertainty_varying_AAP()
-    # display_FPR_varying_AAP()
-    # display_TPR_varying_AAP()
+    display_MTTSF_varying_VUB()
+    display_cost_varying_VUB()
+    display_HEU_varying_VUB()
+    display_uncertainty_varying_VUB()
+    display_FPR_varying_VUB()
+    display_TPR_varying_VUB()
+
+    display_MTTSF_varying_AAP()
+    display_cost_varying_AAP()
+    display_HEU_varying_AAP()
+    display_uncertainty_varying_AAP()
+    display_FPR_varying_AAP()
+    display_TPR_varying_AAP()
 
     # varying parameter
     # display_TTSF_vary_AttArivalProb()

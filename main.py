@@ -1048,21 +1048,21 @@ def run_sumulation_group_ML_data_collect_vary_VUB(current_scheme, uncertain_sche
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     start = time.time()
-    simulation_time = 100
+    simulation_time = 1000
     print(f"number of core: {multiprocessing.cpu_count()}")
     # game_start()
     # decision_scheme: 0 means random, 1 means HEU, 2 means ML, 3 means ML Data Collection
     # (current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time)
 
     # Static Vulnerability
-    run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
-    run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
-    run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
-    run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
-    run_sumulation_group_1("No-DD-IPI", False, True, True, 1, simulation_time)
+    # run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
+    # run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
+    # run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
+    # run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
+    # run_sumulation_group_1("No-DD-IPI", False, True, True, 1, simulation_time)
     run_sumulation_group_1("DD-PI", True, False, False, 1, simulation_time)
-    run_sumulation_group_1("DD-ML-PI", True, False, False, 2, simulation_time)
-    run_sumulation_group_1("No-DD-PI", False, False, False, 1, simulation_time)
+    # run_sumulation_group_1("DD-ML-PI", True, False, False, 2, simulation_time)
+    # run_sumulation_group_1("No-DD-PI", False, False, False, 1, simulation_time)
     # run_sumulation_group_1("DD-IPI_ML_data", True, True, False, 1, simulation_time)
 
     # Varying Vulnerability Upper Bound (VUB)
@@ -1126,8 +1126,10 @@ if __name__ == '__main__':
     print("Project took", time.time() - start, "seconds.")
     try:
         os.system('say "your program has finished"')
+        os._exit(0)
     except:
         print("command not found: say")
+
     # os.system('play -nq -t alsa synth {} sine {}'.format(duration, freq))
 
     # run_sumulation_group_1("DD-Random-PI", True, False, 0, simulation_time) # removed

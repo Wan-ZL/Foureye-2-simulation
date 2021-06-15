@@ -579,6 +579,7 @@ class game_class:
                 def_DHEU_str_index = random.choices(range(self.strategy_number))[0]
             else:
                 def_AHEU_str_index = random.choice(np.where(attacker.def_guess_AHEU == max(attacker.def_guess_AHEU))[0])
+                # def_DHEU_str_index = random.choice(np.where(attacker.defender_HEU == max(attacker.defender_HEU))[0])
                 def_DHEU_str_index = random.choice(np.where(self.defender.DHEU == max(self.defender.DHEU))[0])
 
             # if random.random() < attacker.uncertainty:

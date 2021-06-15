@@ -277,8 +277,8 @@ def set_recover_time(G):
 def set_reachability(G):
     if not nx.get_node_attributes(G, "reachability"):
         nx.set_node_attributes(G, 0, "reachability")
-    # reachability = nx.betweenness_centrality(G)
-    reachability = nx.degree_centrality(G)
+    reachability = nx.betweenness_centrality(G)
+    # reachability = nx.degree_centrality(G)
     for n in G.nodes():
         G.nodes[n]["reachability"] = reachability[n]
 
