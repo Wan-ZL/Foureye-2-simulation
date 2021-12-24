@@ -576,8 +576,28 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
         data_x = np.concatenate((data_x, self.impact_record))  # from index 33 to 40
         data_x = np.concatenate((data_x, [self.uncertainty]))
         data_x = np.concatenate((data_x, self.att_previous_CKC))
-        y_pred = knn_model.predict(data_x.reshape(1, -1))
-        self.chosen_strategy_list = y_pred
+        # y_pred = knn_model.predict(data_x.reshape(1, -1))
+
+        # ML create bundle strategy
+        y_pred_index = knn_model.classes_
+        [y_pred_1] = knn_model.predict_proba(data_x.reshape(1, -1))
+        y_pred_dic = {y_pred_index[i]: y_pred_1[i] for i in range(len(y_pred_index))}
+
+        temp_dict = list(y_pred_dic.items())                # shuffle dictionary
+        random.shuffle(temp_dict)
+        y_pred_dic = dict(temp_dict)
+
+        # print(f"y_pred_dic: {y_pred_dic}")
+        first_opt = max(y_pred_dic, key=y_pred_dic.get)     # get first optimal defense strategy
+        # print(f"first max: {first_opt}")
+        y_pred_dic.pop(first_opt)
+        second_opt = max(y_pred_dic, key=y_pred_dic.get)    # get second optimal defense strategy
+
+        ml_bundle = [first_opt]
+        if self.strat_cost[first_opt] + self.strat_cost[second_opt] <= self.cost_limit and first_opt != second_opt and second_opt !=3: # DS4 causes system fail early
+            ml_bundle.append(second_opt)
+
+        self.chosen_strategy_list = ml_bundle
     else:
         # Selection Scheme
         if self.decision_scheme == 0 or self.decision_scheme == 3:  # for random selection scheme

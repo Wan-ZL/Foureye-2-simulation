@@ -108,7 +108,7 @@ def display_TTSF_in_one_bar():
     # for x in range(len(y_result_list)):
         # plt.text(x+0.03, y_result_list[x]+0.5 , round(y_result_list[x],2))
 
-    plt.xticks(np.arange(len(schemes)), [textwrap.fill(label, 7) for label in schemes], fontsize=axis_size*0.6)
+    plt.xticks(np.arange(len(schemes)), [textwrap.fill(label, 7) for label in legend_name], fontsize=axis_size*0.6)
     plt.yticks(fontsize=axis_size)
     plt.xlabel("Schemes", fontsize=font_size)
     plt.ylabel("MTTSF", fontsize=font_size)
@@ -169,13 +169,14 @@ def display_HEU_In_One():
             denominator_list[:len(att_HEU_all_result[key])] += np.ones(len(att_HEU_all_result[key]))
 
         averaged_AHEU_list = summed_AHEU_list / denominator_list
-        plt.plot(range(1, len(averaged_AHEU_list)), averaged_AHEU_list[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
+        plt.plot(range(1, len(averaged_AHEU_list)), averaged_AHEU_list[1:], linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index])
 
-    plt.legend()
+    plt.legend(ncol=2)
     plt.xlabel("# of games", fontsize=font_size)
     plt.ylabel("Averaged C-AHEU", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/AHEU_AllInOne.svg", dpi=figure_dpi)
@@ -202,13 +203,14 @@ def display_HEU_In_One():
 
         averaged_DHEU_list = summed_DHEU_list / denominator_list
 
-        plt.plot(range(1, len(averaged_DHEU_list)), averaged_DHEU_list[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
+        plt.plot(range(1, len(averaged_DHEU_list)), averaged_DHEU_list[1:], linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index])
 
     plt.legend()
     plt.xlabel("# of games", fontsize=font_size)
     plt.ylabel("Averaged C-DHEU", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/DHEU_AllInOne.svg", dpi=figure_dpi)
@@ -813,7 +815,7 @@ def display_inside_attacker_in_one():
 
         average_of_total_attacker = sum_of_total_attacker / counter_of_sum
         average_of_inside_attacker = sum_of_insider_attacker / counter_of_sum
-        plt.plot(range(max_length), average_of_total_attacker, color=color_circle[schemes_index], label=str(schemes[schemes_index]))
+        plt.plot(range(max_length), average_of_total_attacker, color=color_circle[schemes_index], label=str(legend_name[schemes_index]))
         plt.plot(range(max_length), average_of_inside_attacker, color=color_circle[schemes_index])
     # plt.legend(prop={"size": legend_size}, ncol=3, bbox_to_anchor=(0, 1, 1, 0), loc='lower left', mode="expand")
 
@@ -821,7 +823,8 @@ def display_inside_attacker_in_one():
     plt.ylabel("# of attacker (top is total, bottom is inside)", fontsize=font_size / 1.5)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
-    plt.legend(fontsize=axis_size/1.5)
+    plt.legend(fontsize=legend_size/1.6)
+    plt.xlim([0, max_x_length])  # fix x axis range
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/inside_attacker_AllInOne.svg", dpi=figure_dpi)
@@ -904,15 +907,16 @@ def display_uncertainty():
 
         x_values = range(len(average_att_uncertainty))
         y_values = average_att_uncertainty
-        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=schemes[schemes_index],
+        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index],
                  linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=50, markersize=marker_size)
-    plt.legend(prop={"size":legend_size}, ncol=2, bbox_to_anchor=(0, 1, 1, 0),
+    plt.legend(prop={"size":legend_size/1.2}, ncol=4, bbox_to_anchor=(-0.18, 1, 1.2, 0), # ncol=2, bbox_to_anchor=(0, 1, 1, 0),
                   loc='lower left', fontsize='large',mode="expand")
     # plt.legend(prop={"size":legend_size}, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     plt.xlabel("number of games", fontsize=font_size)
     plt.ylabel("Att-Uncertainty", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/att-uncertain-AllInOne.svg", dpi=figure_dpi)
@@ -946,14 +950,15 @@ def display_uncertainty():
 
         x_values = range(len(average_def_uncertainty))
         y_values = average_def_uncertainty
-        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=schemes[schemes_index],
+        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index],
                  linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=50, markersize=marker_size)
-    plt.legend(prop={"size":legend_size}, ncol=2, bbox_to_anchor=(0, 1, 1, 0),
+    plt.legend(prop={"size":legend_size/1.2}, ncol=4, bbox_to_anchor=(-0.18, 1, 1.2, 0), # ncol=2, bbox_to_anchor=(0, 1, 1, 0),
                   loc='lower left', fontsize='large',mode="expand")
     plt.xlabel("number of games", fontsize=font_size)
     plt.ylabel("Def-Uncertainty", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
     plt.tight_layout()
 
     os.makedirs("Figure/All-In-One", exist_ok=True)
@@ -1040,7 +1045,7 @@ def display_average_uncertainty():
 
     plt.xlabel("Schemes", fontsize=font_size)
     plt.ylabel("Average Def-Uncertainty", fontsize=font_size)
-    plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in schemes], fontsize=0.6*axis_size)
+    plt.xticks(range(len(schemes) + 1), [textwrap.fill(label, 7) for label in legend_name], fontsize=0.6*axis_size)
     plt.yticks(fontsize=axis_size)
     plt.tight_layout()
 
@@ -1181,9 +1186,9 @@ def display_TPR():
         x_values = range(len(average_TPR))
         y_values = average_TPR
 
-        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=schemes[schemes_index],
-                 linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=50, markersize=marker_size)
-    plt.legend(prop={"size": legend_size},
+        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index],
+                 linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=20, markersize=marker_size)
+    plt.legend(prop={"size": legend_size/1.2},
                ncol=4,
                bbox_to_anchor=(-0.25, 1.01, 1.25, 0),
                loc='lower left',
@@ -1192,10 +1197,58 @@ def display_TPR():
     plt.ylabel("TPR", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
+    plt.ylim([0.899, 0.935])  # fix x axis range
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/TPR_AllInOne.svg", dpi=figure_dpi)
     plt.savefig("Figure/All-In-One/TPR_AllInOne.png", dpi=figure_dpi)
+    plt.show()
+
+
+def display_FPR():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/R4/FPR.pkl", "rb")
+        FPR_history = pickle.load(the_file)
+        the_file.close()
+
+        max_length = 0
+        for key in FPR_history.keys():
+            if max_length < len(FPR_history[key]):
+                max_length = len(FPR_history[key])
+
+        average_FPR = []
+        for index in range(max_length):
+            sum_on_index = 0
+            number_on_index = 0
+            for key in FPR_history.keys():
+                if len(FPR_history[key]) > 0:
+                    sum_on_index += FPR_history[key][0]
+                    FPR_history[key].pop(0)
+                    number_on_index += 1
+            average_FPR.append(sum_on_index / number_on_index)
+
+        x_values = range(len(average_FPR))
+        y_values = average_FPR
+
+        plt.plot(x_values, y_values, linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index],
+                 linewidth=figure_linewidth, marker=marker_list[schemes_index], markevery=20, markersize=marker_size)
+    plt.legend(prop={"size": legend_size/1.2},
+               ncol=4,
+               bbox_to_anchor=(-0.25, 1.01, 1.25, 0),
+               loc='lower left',
+               mode="expand")
+    plt.xlabel("number of games", fontsize=font_size)
+    plt.ylabel("FPR", fontsize=font_size)
+    plt.xticks(fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
+    plt.ylim([0.065, 0.101])  # fix x axis range
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One", exist_ok=True)
+    plt.savefig("Figure/All-In-One/FPR_AllInOne.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/FPR_AllInOne.png", dpi=figure_dpi)
     plt.show()
 
 def display_average_cost():
@@ -1276,8 +1329,8 @@ def display_cost():
         x_values = range(len(average_att_cost))
         y_values = average_att_cost
 
-        plt.plot(x_values[1:], y_values[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
-    plt.legend(prop={"size": legend_size},
+        plt.plot(x_values[1:], y_values[1:], linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index])
+    plt.legend(prop={"size": legend_size/1.2},
                ncol=4,
                bbox_to_anchor=(-0.18, 1, 1.2, 0),
                loc='lower left',
@@ -1286,6 +1339,7 @@ def display_cost():
     plt.ylabel("Attack cost", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/att_cost.svg", dpi=figure_dpi)
@@ -1318,8 +1372,8 @@ def display_cost():
         x_values = range(len(average_def_cost))
         y_values = average_def_cost
 
-        plt.plot(x_values[1:], y_values[1:], linestyle=all_linestyle[schemes_index], label=schemes[schemes_index])
-    plt.legend(prop={"size": legend_size},
+        plt.plot(x_values[1:], y_values[1:], linestyle=all_linestyle[schemes_index], label=legend_name[schemes_index])
+    plt.legend(prop={"size": legend_size/1.2},
                ncol=4,
                bbox_to_anchor=(-0.18, 1, 1.2, 0),
                loc='lower left',
@@ -1328,6 +1382,7 @@ def display_cost():
     plt.ylabel("Defence cost", fontsize=font_size)
     plt.xticks(fontsize=axis_size)
     plt.yticks(fontsize=axis_size)
+    plt.xlim([0, max_x_length])  # fix x axis range
     plt.tight_layout()
     os.makedirs("Figure/All-In-One", exist_ok=True)
     plt.savefig("Figure/All-In-One/def_cost.svg", dpi=figure_dpi)
@@ -1335,6 +1390,7 @@ def display_cost():
     plt.show()
 
 def display_hitting_prob(schemes, legend_name):
+    max_x_axis = 125
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
         the_file = open("data/" + schemes[schemes_index] + "/R_self_5/hitting_probability.pkl", "rb")
@@ -1345,6 +1401,9 @@ def display_hitting_prob(schemes, legend_name):
         for key in hitting_prob.keys():
             if max_length < len(hitting_prob[key]):
                 max_length = len(hitting_prob[key])
+
+        if max_length > max_x_axis:
+            max_length = max_x_axis
 
         print(hitting_prob)
         print(max_length)
@@ -1387,7 +1446,7 @@ def display_legend():
 
     lines = []
     for schemes_index in range(len(schemes)):
-        line, = ax.plot([1, 2, 3], linestyle=all_linestyle[schemes_index], marker=marker_list[schemes_index], label=legend_name[schemes_index])
+        line, = ax.plot([1, 2, 3], linestyle=all_linestyle[schemes_index], markersize=marker_size/1.5, marker=marker_list[schemes_index], label=legend_name[schemes_index])
         lines.append(line)
     figlegend.legend(handles=lines,prop={"size": legend_size}, ncol=len(legend_name))
 
@@ -2103,16 +2162,17 @@ if __name__ == '__main__':
     # preset values
     all_linestyle = ['-', '--', '-.', ':', '-', '--', '-.', ':']
     patterns = ["|", "\\", "/", "+", "-", ".", "*", "x", "o", "O"]
-    font_size = 25
-    figure_high = 6
+    font_size = 20# 25
+    figure_high = 5 # 6
     figure_width = 7.5
     figure_linewidth = 3
     figure_dpi = 100
-    legend_size = 15
+    legend_size = 15 #18
     axis_size = 20
-    marker_size = 8
+    marker_size = 12
     marker_list = ["p", "d", "v", "x", "s", "*", "1", "."]
     strategy_number = 8
+    max_x_length = 60
     use_legend = False
     # "legend_name" has to match the "schemes"
     legend_name =   ["HG-DD-IPI",   "G-DD-PI",  "HG-DD-ML-IPI", "G-DD-ML-PI",   "DD-Random", "HG-No-DD-IPI",    "G-No-DD-PI",   "No-DD-Random"]
@@ -2136,35 +2196,39 @@ if __name__ == '__main__':
     # display_impact()
     # display_strategy_prob_distribution()
     #
-    # display_uncertainty()
+
+
+    # display_TTSF_in_one_bar()
     # display_average_uncertainty()
     # display_HEU_In_One()
+    # display_inside_attacker_in_one()
+    # display_TPR()
+    display_FPR()
+    # display_cost()
+    # display_uncertainty()
+
     # display_average_HEU_In_One()
     # display_SysFail_in_one()
-    # display_TTSF_in_one_bar()
-    # display_inside_attacker_in_one()
     # display_strategy_prob_distribution_in_one()
     # display_average_TPR()
-    # display_TPR()
     # display_average_cost()
-    # display_cost()
-    display_hitting_prob(["DD-Random","DD-IPI", "DD-PI"], ["DD-Random", "HG-DD-IPI", "G-DD-PI"])
+    # display_hitting_prob(["DD-Random","DD-IPI", "DD-PI"], ["DD-Random", "HG-DD-IPI", "G-DD-PI"])
 
     # display_legend()
 
-    display_MTTSF_varying_VUB()
-    display_cost_varying_VUB()
-    display_HEU_varying_VUB()
-    display_uncertainty_varying_VUB()
-    display_FPR_varying_VUB()
-    display_TPR_varying_VUB()
-
-    display_MTTSF_varying_AAP()
-    display_cost_varying_AAP()
-    display_HEU_varying_AAP()
-    display_uncertainty_varying_AAP()
-    display_FPR_varying_AAP()
-    display_TPR_varying_AAP()
+    # display_MTTSF_varying_VUB()
+    # display_cost_varying_VUB()
+    # display_HEU_varying_VUB()
+    # display_uncertainty_varying_VUB()
+    # display_FPR_varying_VUB()
+    # display_TPR_varying_VUB()
+    #
+    # display_MTTSF_varying_AAP()
+    # display_cost_varying_AAP()
+    # display_HEU_varying_AAP()
+    # display_uncertainty_varying_AAP()
+    # display_FPR_varying_AAP()
+    # display_TPR_varying_AAP()
 
     # varying parameter
     # display_TTSF_vary_AttArivalProb()

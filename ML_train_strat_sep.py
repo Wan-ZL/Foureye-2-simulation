@@ -333,11 +333,14 @@ def train_ML_predict_action(schemes, x_length, n_neighbors, strategy_number):
         MSE_predict = mean_squared_error(y_test, y_predict)
         print(f"MSE_predict {MSE_predict}")
 
+        print(model.get_params())
+        print(model.tree_.node_count)
+
         # save trained model
-        os.makedirs("data/trained_ML_model", exist_ok=True)
-        the_file = open("data/trained_ML_model/trained_classi_model_"+schemes[schemes_index]+".pkl", "wb+")
-        pickle.dump(model, the_file)
-        the_file.close()
+        # os.makedirs("data/trained_ML_model", exist_ok=True)
+        # the_file = open("data/trained_ML_model/trained_classi_model_"+schemes[schemes_index]+".pkl", "wb+")
+        # pickle.dump(model, the_file)
+        # the_file.close()
 
 def train_ML_predict_action_vary_AAP(schemes, x_length, n_neighbors, strategy_number):
     AAP_list = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
@@ -441,8 +444,8 @@ if __name__ == '__main__':
 
     # ML predict action
     classi_schemes = ["ML_collect_data_PI", "ML_collect_data_IPI"]
-    # train_ML_predict_action(classi_schemes, x_length, n_neighbors, strategy_number)
-    train_ML_predict_action_vary_AAP(classi_schemes, x_length, n_neighbors, strategy_number)
+    train_ML_predict_action(classi_schemes, x_length, n_neighbors, strategy_number)
+    # train_ML_predict_action_vary_AAP(classi_schemes, x_length, n_neighbors, strategy_number)
     # train_ML_predict_action_vary_VUB(classi_schemes, x_length, n_neighbors, strategy_number)
     print('The scikit-learn version is {}.'.format(sklearn.__version__))
 

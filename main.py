@@ -402,6 +402,9 @@ def run_sumulation_group_vary_VUB(current_scheme, DD_using, uncertain_scheme_att
     vul_range[0] = web_data_SoftVul_range
     vul_range[1] = IoT_SoftVul_range
 
+    vul_upper_bound = [2, 4, 6, 8, 10]
+    vary_name = "VUB"
+
     results = []
     with concurrent.futures.ProcessPoolExecutor() as executor:
         for vul_index in range(5):
@@ -409,8 +412,8 @@ def run_sumulation_group_vary_VUB(current_scheme, DD_using, uncertain_scheme_att
             for i in range(simulation_time):
                 future = executor.submit(
                     game_start, i, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, current_scheme,
-                    web_data_SoftVul_range[vul_index],
-                    IoT_SoftVul_range[vul_index])  # scheme change here
+                    web_data_upper_vul=web_data_SoftVul_range[vul_index],
+                    Iot_upper_vul=IoT_SoftVul_range[vul_index], vary_name=vary_name, vary_value=vul_upper_bound[vul_index])  # scheme change here
                 particular_vul_result.append(future)
             results.append(particular_vul_result)
 
@@ -1050,14 +1053,14 @@ if __name__ == '__main__':
     start = time.time()
     simulation_time = 1000
     print(f"number of core: {multiprocessing.cpu_count()}")
-    # game_start()
+    game_start()
     # decision_scheme: 0 means random, 1 means HEU, 2 means ML, 3 means ML Data Collection
     # (current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time)
 
     # Static Vulnerability
-    # run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
+    run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
     # run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
-    # run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
+    run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
     # run_sumulation_group_1("No-DD-IPI", False, True, True, 1, simulation_time)
     run_sumulation_group_1("DD-PI", True, False, False, 1, simulation_time)
