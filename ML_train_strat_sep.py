@@ -414,7 +414,7 @@ def train_ML_predict_action_vary_VUB(schemes, x_length, n_neighbors, strategy_nu
 
             X_train, X_test, y_train, y_test = train_test_split(all_dataset_X, all_dataset_Y,
                                                                 test_size=0.1, random_state=1)
-
+            print("y_train", y_train)
             # model = neighbors.KNeighborsClassifier(n_neighbors, weights='distance', algorithm='brute', n_jobs=-1).fit(X_train, y_train)
             model = tree.DecisionTreeClassifier().fit(X_train, y_train)
 

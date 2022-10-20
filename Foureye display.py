@@ -2203,7 +2203,7 @@ if __name__ == '__main__':
     # display_HEU_In_One()
     # display_inside_attacker_in_one()
     # display_TPR()
-    display_FPR()
+    # display_FPR()
     # display_cost()
     # display_uncertainty()
 
@@ -2228,7 +2228,7 @@ if __name__ == '__main__':
     # display_HEU_varying_AAP()
     # display_uncertainty_varying_AAP()
     # display_FPR_varying_AAP()
-    # display_TPR_varying_AAP()
+    display_TPR_varying_AAP()
 
     # varying parameter
     # display_TTSF_vary_AttArivalProb()
