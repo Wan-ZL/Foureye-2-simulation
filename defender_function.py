@@ -588,15 +588,25 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
         random.shuffle(temp_dict)
         y_pred_dic = dict(temp_dict)
 
-        
-        first_opt = max(y_pred_dic, key=y_pred_dic.get)     # get first optimal defense strategy
-        # print(f"first max: {first_opt}")
-        y_pred_dic.pop(first_opt)
-        second_opt = max(y_pred_dic, key=y_pred_dic.get)    # get second optimal defense strategy
+        # new bundle create code
+        bundle_cost = 0
+        ml_bundle = []
+        while bundle_cost <= self.cost_limit:
+            max_opt = max(y_pred_dic, key=y_pred_dic.get)     # get an optimal defense strategy
+            if bundle_cost + self.strat_cost[max_opt] <= self.cost_limit:
+                ml_bundle.append(max_opt)       # add to bundle
+                y_pred_dic.pop(max_opt)         # avoid duplicate chosen
+            else:
+                break
 
-        ml_bundle = [first_opt]
-        if self.strat_cost[first_opt] + self.strat_cost[second_opt] <= self.cost_limit and first_opt != second_opt and second_opt !=3: # DS4 causes system fail early
-            ml_bundle.append(second_opt)
+        # # old bundle create code
+        # first_opt = max(y_pred_dic, key=y_pred_dic.get)     # get first optimal defense strategy
+        # # print(f"first max: {first_opt}")
+        # y_pred_dic.pop(first_opt)
+        # second_opt = max(y_pred_dic, key=y_pred_dic.get)    # get second optimal defense strategy
+        # ml_bundle = [first_opt]
+        # if self.strat_cost[first_opt] + self.strat_cost[second_opt] <= self.cost_limit and first_opt != second_opt and second_opt !=3: # DS4 causes system fail early
+        #     ml_bundle.append(second_opt)
 
         self.chosen_strategy_list = ml_bundle
     else:
