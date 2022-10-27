@@ -588,7 +588,7 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
         random.shuffle(temp_dict)
         y_pred_dic = dict(temp_dict)
 
-        # print(f"y_pred_dic: {y_pred_dic}")
+        
         first_opt = max(y_pred_dic, key=y_pred_dic.get)     # get first optimal defense strategy
         # print(f"first max: {first_opt}")
         y_pred_dic.pop(first_opt)
