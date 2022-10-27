@@ -2275,6 +2275,59 @@ def display_Recall_varying_AAP():
     plt.show()
 
 
+# Recall is the same to the TPR
+def display_precision_varying_AAP():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/TP.pkl", "rb")
+        TP = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/FP.pkl", "rb")
+        FP = pickle.load(the_file)
+        print("TP", TP)
+        print("FP", FP)
+        the_file.close()
+
+        y_axis = np.zeros(len(TP))
+        for varying_key in TP.keys():
+            # get TP
+            TP_sum = 0
+            TP_counter = 0
+            for sim_key in TP[varying_key].keys():
+                TP_sum += sum(TP[varying_key][sim_key])
+                TP_counter += len(TP[varying_key][sim_key])
+            TP_average = TP_sum / TP_counter
+            # get FP
+            FP_sum = 0
+            FP_counter = 0
+            for sim_key in FP[varying_key].keys():
+                FP_sum += sum(FP[varying_key][sim_key])
+                FP_counter += len(FP[varying_key][sim_key])
+            FP_average = FP_sum / FP_counter
+
+            y_axis[varying_key] = TP_average / (TP_average + FP_average)
+
+        plt.plot(list(TP.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
+    plt.xticks(list(TP.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("Precision", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/Precision.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/Precision.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/Precision.png", dpi=figure_dpi)
+    plt.show()
+
+
 if __name__ == '__main__':
     # preset values
     all_linestyle = ['-', '--', '-.', ':', '-', '--', '-.', ':']
@@ -2349,6 +2402,7 @@ if __name__ == '__main__':
     # display_TPR_varying_AAP()
     # display_FNR_varying_AAP()
     display_Recall_varying_AAP()
+    display_precision_varying_AAP()
 
 
     # varying parameter

@@ -1,3 +1,4 @@
+# Python Version: 3.6.12
 # link all files
 from game_function import *
 import concurrent.futures
@@ -1124,12 +1125,12 @@ if __name__ == '__main__':
     # run_sumulation_group_vary_AAP("DD-Random", True, True, True, 0, simulation_time)
     # run_sumulation_group_vary_AAP("No-DD-Random", False, True, True, 0, simulation_time)
     # run_sumulation_group_vary_AAP("DD-IPI", True, True, True, 1, simulation_time)
-    run_sumulation_group_vary_AAP("DD-ML-IPI", True, True, True, 2, simulation_time)
+    # run_sumulation_group_vary_AAP("DD-ML-IPI", True, True, True, 2, simulation_time)
     # run_sumulation_group_vary_AAP("No-DD-IPI", False, True, True, 1, simulation_time)
     # run_sumulation_group_vary_AAP("DD-PI", True, False, False, 1, simulation_time)
     # run_sumulation_group_vary_AAP("DD-ML-PI", True, False, False, 2, simulation_time)
     # run_sumulation_group_vary_AAP("No-DD-PI", False, False, False, 1, simulation_time)
-    # run_sumulation_group_vary_AAP("DD-IPI_ML_data", True, True, False, 1, simulation_time)
+    run_sumulation_group_vary_AAP("DD-IPI_ML_data", True, True, False, 1, simulation_time)
 
     # Collect data for ML
     # run_sumulation_group_ML_data_collect("ML_collect_data_PI", False, False, 3, simulation_time)
