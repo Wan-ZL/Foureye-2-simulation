@@ -82,6 +82,10 @@ class game_class:
         self.def_strategy_counter = []
         self.FPR_history = []
         self.TPR_history = []
+        self.TP_history = []
+        self.FN_history = []
+        self.TN_history = []
+        self.FP_history = []
         self.att_cost_history = []
         self.def_cost_history = []
         self.criticality_hisotry = np.zeros(100000)  # np.zeros(10000)
@@ -461,6 +465,10 @@ class game_class:
         self.FPR_history.append(1 - self.TN /
                                 (self.TN + self.FP))  # FPR using preset value
         self.TPR_history.append(1 - self.FN / (self.FN + self.TP))
+        self.TP_history.append(self.TP)
+        self.FN_history.append(self.FN)
+        self.TN_history.append(self.TN)
+        self.FP_history.append(self.FP)
 
         # Att/Def Cost
         att_cost_in_one_game = []
