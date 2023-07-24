@@ -57,7 +57,7 @@ class game_class:
             web_data_upper_vul, Iot_upper_vul, self.node_size_multiplier)
         self.uncertain_scheme_att = uncertain_scheme_att
         self.uncertain_scheme_def = uncertain_scheme_def
-        self.collusion_attack_probability = 1  # TODO: add to calc_APV()
+        self.collusion_attack_probability = 1
         self.attacker_ID = 0
         self.attacker_list = []
         self.attacker_template = attacker_class(self, self.attacker_ID)

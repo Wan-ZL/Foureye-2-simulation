@@ -1068,7 +1068,6 @@ def autolabel(rects, ax):
 def display_SysFail_in_one():
     fig, ax = plt.subplots(figsize=(figure_width, figure_high))
 
-    # shift_value = [- width / 2 - width, - width / 2, + width / 2, width / 2 + width]
     set_width = 0.9
     width = set_width/len(schemes)
     shift_value = (np.arange(len(schemes))- (len(schemes)-1)/2)/len(schemes) * set_width

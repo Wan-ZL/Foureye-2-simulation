@@ -50,7 +50,7 @@ def defender_uncertainty_update(att_detect, def_monit_time, uncertain_scheme, de
         return 1
     else:
         if uncertain_scheme:
-            return uncertainty     # for test. orignial: uncertainty
+            return uncertainty
         else:
             return 0
 
@@ -330,7 +330,7 @@ def defender_class_create_bundle(self, DD_using):
                 # E
                 strategy_option[1] = 1
                 strategy_option[2] = 1
-                strategy_option[3] = 1    # test feature: orginin: remove comment
+                strategy_option[3] = 1
                 strategy_option[4] = 1
                 strategy_option[6] = 1
                 strategy_option[7] = 1
@@ -373,19 +373,19 @@ def defender_class_create_bundle(self, DD_using):
                 # E
                 strategy_option[1] = 1
                 strategy_option[2] = 1
-                strategy_option[3] = 1    # test feature: orginin: remove comment
+                strategy_option[3] = 1
                 if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 3:
                 # C2
                 strategy_option[1] = 1
                 strategy_option[2] = 1
-                strategy_option[3] = 1    # test feature: orginin: remove comment
+                strategy_option[3] = 1
                 if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 4:
                 # M
                 strategy_option[1] = 1
                 strategy_option[2] = 1
-                strategy_option[3] = 1    # test feature: orginin: remove comment
+                strategy_option[3] = 1
                 if len(strategy_option)-1 == 8: strategy_option[8] = 1
             elif def_CKC == 5:
                 # DE
@@ -704,7 +704,7 @@ class defender_class:
             self.uncertainty = 1
         else:
             if self.uncertain_scheme:
-                self.uncertainty = 1  # test, orignial 1
+                self.uncertainty = 1
             else:
                 self.uncertainty = 0
 
@@ -748,8 +748,8 @@ class defender_class:
                     # if unsuccessful to observe CKC position, randomly guess one
                     observed_CKC_id = random.randrange(0,len(self.observed_CKC_count))
 
-                self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1    # for test
-                self.observed_CKC_count[observed_CKC_id] += 1                         # for test
+                self.observed_strategy_count[observed_CKC_id, observed_action_id] += 1
+                self.observed_CKC_count[observed_CKC_id] += 1
 
 
 
@@ -775,7 +775,7 @@ class defender_class:
             self.uncertainty = uncertain_sum/counter
 
     def reset_attribute(self, CKC_number):
-        self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))    # add for test
+        self.observed_strategy_count = np.zeros((self.CKC_number, self.strategy_number))
         self.observed_CKC_count = np.zeros(self.CKC_number)     # add for teset
         self.key_time = 1
         self.monit_time = 1
@@ -786,7 +786,7 @@ class defender_class:
         self.dec = 0
         self.deception_tech_used = False
         if self.uncertain_scheme:
-            self.uncertainty = 0  # test, orignial 1
+            self.uncertainty = 0
         else:
             self.uncertainty = 0
 
