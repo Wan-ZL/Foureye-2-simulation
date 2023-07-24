@@ -2119,6 +2119,45 @@ def display_FPR_varying_AAP():
     plt.savefig("Figure/All-In-One/varying_AAP/FPR.png", dpi=figure_dpi)
     plt.show()
 
+
+def display_TNR_varying_AAP():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/FPR.pkl", "rb")
+        FPR = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(FPR))
+        for varying_key in FPR.keys():
+            FPR_sum = 0
+            FPR_counter = 0
+            for sim_key in FPR[varying_key].keys():
+                FPR_sum += sum(FPR[varying_key][sim_key])
+                FPR_counter += len(FPR[varying_key][sim_key])
+            y_axis[varying_key] = 1 - FPR_sum / FPR_counter     # convert FPR to TNR
+
+        plt.plot(list(FPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
+    plt.xticks(list(FPR.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("TNR", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/TNR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/TNR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/TNR.png", dpi=figure_dpi)
+    plt.show()
+
+
 def display_TPR_varying_AAP():
     plt.figure(figsize=(figure_width, figure_high))
     for schemes_index in range(len(schemes)):
@@ -2154,6 +2193,84 @@ def display_TPR_varying_AAP():
     plt.savefig("Figure/All-In-One/varying_AAP/TPR.svg", dpi=figure_dpi)
     plt.savefig("Figure/All-In-One/varying_AAP/TPR.eps", dpi=figure_dpi)
     plt.savefig("Figure/All-In-One/varying_AAP/TPR.png", dpi=figure_dpi)
+    plt.show()
+
+
+def display_FNR_varying_AAP():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/TPR.pkl", "rb")
+        TPR = pickle.load(the_file)
+        the_file.close()
+
+        y_axis = np.zeros(len(TPR))
+        for varying_key in TPR.keys():
+            TPR_sum = 0
+            TPR_counter = 0
+            for sim_key in TPR[varying_key].keys():
+                TPR_sum += sum(TPR[varying_key][sim_key])
+                TPR_counter += len(TPR[varying_key][sim_key])
+            y_axis[varying_key] = 1 - TPR_sum / TPR_counter     # convert TPR to FNR
+
+        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
+    plt.xticks(list(TPR.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("FNR", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/FNR.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/FNR.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/FNR.png", dpi=figure_dpi)
+    plt.show()
+
+
+# Recall is the same to the TPR
+def display_Recall_varying_AAP():
+    plt.figure(figsize=(figure_width, figure_high))
+    for schemes_index in range(len(schemes)):
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/AAP_Range.pkl", "rb")
+        varying_range = pickle.load(the_file)
+        the_file = open("data/" + schemes[schemes_index] + "/varying_AAP/TPR.pkl", "rb")
+        TPR = pickle.load(the_file)
+        print("TPR", TPR)
+        the_file.close()
+
+        y_axis = np.zeros(len(TPR))
+        for varying_key in TPR.keys():
+            TPR_sum = 0
+            TPR_counter = 0
+            for sim_key in TPR[varying_key].keys():
+                TPR_sum += sum(TPR[varying_key][sim_key])
+                TPR_counter += len(TPR[varying_key][sim_key])
+            y_axis[varying_key] = TPR_sum / TPR_counter
+
+        plt.plot(list(TPR.keys()), y_axis, linestyle=all_linestyle[schemes_index], linewidth=figure_linewidth, markersize=marker_size, marker=marker_list[schemes_index], label=schemes[schemes_index])
+
+    if use_legend:
+        plt.legend(prop={"size": legend_size},
+                   ncol=4,
+                   bbox_to_anchor=(-0.17, 1, 1.2, 0),
+                   loc='lower left',
+                   mode="expand")
+    plt.xticks(list(TPR.keys()), varying_range, fontsize=axis_size)
+    plt.yticks(fontsize=axis_size)
+    plt.xlabel("Attacker Arrival Probability", fontsize=font_size)
+    plt.ylabel("Recall", fontsize=font_size)
+    plt.tight_layout()
+    os.makedirs("Figure/All-In-One/varying_AAP", exist_ok=True)
+    plt.savefig("Figure/All-In-One/varying_AAP/Recall.svg", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/Recall.eps", dpi=figure_dpi)
+    plt.savefig("Figure/All-In-One/varying_AAP/Recall.png", dpi=figure_dpi)
     plt.show()
 
 
@@ -2227,7 +2344,11 @@ if __name__ == '__main__':
     # display_HEU_varying_AAP()
     # display_uncertainty_varying_AAP()
     # display_FPR_varying_AAP()
-    display_TPR_varying_AAP()
+    # display_TNR_varying_AAP()
+    # display_TPR_varying_AAP()
+    # display_FNR_varying_AAP()
+    display_Recall_varying_AAP()
+
 
     # varying parameter
     # display_TTSF_vary_AttArivalProb()

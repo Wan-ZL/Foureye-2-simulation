@@ -420,7 +420,7 @@ def defender_class_create_bundle(self, DD_using):
         all_strategy_bundle = [list(bundle) for bundle in all_strategy_bundle]
 
 
-        # get bundle that is not out of budget
+        # get all possible bundles that are not out of budget
         optional_strategy_bundle_list = []
         for bundle in all_strategy_bundle:
             bundle_cost = 0
@@ -565,7 +565,7 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
             else:  # when not consider uncertainty
                 the_file = open("data_vary/"+vary_name+"="+str(vary_value)+"/trained_ML_model/trained_classi_model_ML_collect_data_PI.pkl", "rb")
 
-        knn_model = pickle.load(the_file)
+        ML_model = pickle.load(the_file)
         the_file.close()
         data_x = []
         data_x = np.concatenate((data_x, self.att_previous_strat))
@@ -576,11 +576,12 @@ def defender_class_choose_bundle(self, att_strategy_number, attack_cost_record, 
         data_x = np.concatenate((data_x, self.impact_record))  # from index 33 to 40
         data_x = np.concatenate((data_x, [self.uncertainty]))
         data_x = np.concatenate((data_x, self.att_previous_CKC))
-        # y_pred = knn_model.predict(data_x.reshape(1, -1))
+        # y_pred = ML_model.predict(data_x.reshape(1, -1))
 
         # ML create bundle strategy
-        y_pred_index = knn_model.classes_
-        [y_pred_1] = knn_model.predict_proba(data_x.reshape(1, -1))
+        y_pred_index = ML_model.classes_
+        [y_pred_1] = ML_model.predict_proba(data_x.reshape(1, -1))
+
         y_pred_dic = {y_pred_index[i]: y_pred_1[i] for i in range(len(y_pred_index))}
 
         temp_dict = list(y_pred_dic.items())                # shuffle dictionary

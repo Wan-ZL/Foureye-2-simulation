@@ -83,6 +83,10 @@ def run_sumulation_group_1(current_scheme, DD_using, uncertain_scheme_att, uncer
     def_strategy_count_result = {}
     FPR_all_result = {}
     TPR_all_result = {}
+    TP_all_result = {}
+    FN_all_result = {}
+    TN_all_result = {}
+    FP_all_result = {}
     att_cost_all_result = {}
     def_cost_all_result = {}
     criticality_all_result = {}
@@ -391,6 +395,10 @@ def run_sumulation_group_vary_VUB(current_scheme, DD_using, uncertain_scheme_att
     def_uncertainty_all_result = {}
     FPR_all_result = {}
     TPR_all_result = {}
+    TP_all_result = {}
+    FN_all_result = {}
+    TN_all_result = {}
+    FP_all_result = {}
     att_strategy_all_result = {}
     def_strategy_all_result = {}
 
@@ -522,6 +530,10 @@ def run_sumulation_group_vary_AAP(current_scheme, DD_using, uncertain_scheme_att
     def_uncertainty_all_result = {}
     FPR_all_result = {}
     TPR_all_result = {}
+    TP_all_result = {}
+    FN_all_result = {}
+    TN_all_result = {}
+    FP_all_result = {}
     att_strategy_all_result = {}
     def_strategy_all_result = {}
 
@@ -550,6 +562,10 @@ def run_sumulation_group_vary_AAP(current_scheme, DD_using, uncertain_scheme_att
             def_uncertainty_temp = {}
             FPR_temp = {}
             TPR_temp = {}
+            TP_temp = {}
+            FN_temp = {}
+            TN_temp = {}
+            FP_temp = {}
             att_stra_temp = {}
             def_stra_temp = {}
             sim_index = 0
@@ -569,6 +585,10 @@ def run_sumulation_group_vary_AAP(current_scheme, DD_using, uncertain_scheme_att
                 # # FPR & TPR
                 FPR_temp[sim_index] = future.result().FPR_history
                 TPR_temp[sim_index] = future.result().TPR_history
+                TP_temp[sim_index] = future.result().TP_history
+                FN_temp[sim_index] = future.result().FN_history
+                TN_temp[sim_index] = future.result().TN_history
+                FP_temp [sim_index] = future.result().FP_history
                 # # Strategy Usability
                 att_stra_temp[sim_index] = future.result().att_strategy_counter
                 def_stra_temp[sim_index] = future.result().def_strategy_counter
@@ -583,6 +603,10 @@ def run_sumulation_group_vary_AAP(current_scheme, DD_using, uncertain_scheme_att
             def_uncertainty_all_result[vul_index] = def_uncertainty_temp
             FPR_all_result[vul_index] = FPR_temp
             TPR_all_result[vul_index] = TPR_temp
+            TP_all_result[vul_index] = TP_temp
+            FN_all_result[vul_index] = FN_temp
+            TN_all_result[vul_index] = TN_temp
+            FP_all_result[vul_index] = FP_temp
             att_strategy_all_result[vul_index] = att_stra_temp
             def_strategy_all_result[vul_index] = def_stra_temp
             vul_index += 1
@@ -632,6 +656,19 @@ def run_sumulation_group_vary_AAP(current_scheme, DD_using, uncertain_scheme_att
     the_file = open("data/" + current_scheme + "/varying_AAP/TPR.pkl", "wb+")
     pickle.dump(TPR_all_result, the_file)
     the_file.close()
+    the_file = open("data/" + current_scheme + "/varying_AAP/TP.pkl", "wb+")
+    pickle.dump(TP_all_result, the_file)
+    the_file.close()
+    the_file = open("data/" + current_scheme + "/varying_AAP/FN.pkl", "wb+")
+    pickle.dump(FN_all_result, the_file)
+    the_file.close()
+    the_file = open("data/" + current_scheme + "/varying_AAP/TN.pkl", "wb+")
+    pickle.dump(TN_all_result, the_file)
+    the_file.close()
+    the_file = open("data/" + current_scheme + "/varying_AAP/FP.pkl", "wb+")
+    pickle.dump(FP_all_result, the_file)
+    the_file.close()
+
 
 def run_sumulation_group_special(current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time, vary_name, vary_value):
     MTTSF_all_result = 0
@@ -646,6 +683,10 @@ def run_sumulation_group_special(current_scheme, DD_using, uncertain_scheme_att,
     def_strategy_count_result = {}
     FPR_all_result = {}
     TPR_all_result = {}
+    TP_all_result = {}
+    FN_all_result = {}
+    TN_all_result = {}
+    FP_all_result = {}
     att_cost_all_result = {}
     def_cost_all_result = {}
     criticality_all_result = {}
@@ -1058,12 +1099,12 @@ if __name__ == '__main__':
     # (current_scheme, DD_using, uncertain_scheme_att, uncertain_scheme_def, decision_scheme, simulation_time)
 
     # Static Vulnerability
-    run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
+    # run_sumulation_group_1("DD-Random", True, True, True, 0, simulation_time)
     # run_sumulation_group_1("No-DD-Random", False, True, True, 0, simulation_time)
-    run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
+    # run_sumulation_group_1("DD-IPI", True, True, True, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-IPI", True, True, True, 2, simulation_time)
     # run_sumulation_group_1("No-DD-IPI", False, True, True, 1, simulation_time)
-    run_sumulation_group_1("DD-PI", True, False, False, 1, simulation_time)
+    # run_sumulation_group_1("DD-PI", True, False, False, 1, simulation_time)
     # run_sumulation_group_1("DD-ML-PI", True, False, False, 2, simulation_time)
     # run_sumulation_group_1("No-DD-PI", False, False, False, 1, simulation_time)
     # run_sumulation_group_1("DD-IPI_ML_data", True, True, False, 1, simulation_time)
@@ -1083,7 +1124,7 @@ if __name__ == '__main__':
     # run_sumulation_group_vary_AAP("DD-Random", True, True, True, 0, simulation_time)
     # run_sumulation_group_vary_AAP("No-DD-Random", False, True, True, 0, simulation_time)
     # run_sumulation_group_vary_AAP("DD-IPI", True, True, True, 1, simulation_time)
-    # run_sumulation_group_vary_AAP("DD-ML-IPI", True, True, True, 2, simulation_time)
+    run_sumulation_group_vary_AAP("DD-ML-IPI", True, True, True, 2, simulation_time)
     # run_sumulation_group_vary_AAP("No-DD-IPI", False, True, True, 1, simulation_time)
     # run_sumulation_group_vary_AAP("DD-PI", True, False, False, 1, simulation_time)
     # run_sumulation_group_vary_AAP("DD-ML-PI", True, False, False, 2, simulation_time)
