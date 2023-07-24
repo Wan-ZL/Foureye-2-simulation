@@ -1166,7 +1166,7 @@ class attacker_class:
                                                        self.uncertain_scheme, self.decision_scheme)
         self.defender_uncertainty = defender_uncertainty_update(self.detect_prob, self.defender_monit_time,
                                                                 self.defender_uncertain_scheme, self.defender_decision_scheme)
-        # defender observe this attacker (TODO: this should under uncertainty)
+        # defender observe this attacker
         self.defender_observation[self.chosen_strategy] += 1
         # defender's HEU on this attacker
         if not self.NIDS_detected:
