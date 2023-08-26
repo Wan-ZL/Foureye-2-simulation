@@ -6,3 +6,7 @@ Existing defensive deception (DD) approaches apply game theory, assuming that an
 Resisting Multiple Advanced Persistent Threats via Hypergame-Theoretic Defensive Deception
 
 Link: https://ieeexplore.ieee.org/abstract/document/10040491
+
+## Acknowledgment
+
+This work is partly supported by the Army Research Office under Grant Contract Number W911NF-20-2-0140. The views and conclusions contained in this document are those of the authors and should not be interpreted as representing the official policies, either expressed or implied, of the Army Research Office or the U.S. Government. The U.S. Government is authorized to reproduce and distribute reprints for Government purposes notwithstanding any copyright notation herein.
